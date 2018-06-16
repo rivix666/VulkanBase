@@ -36,18 +36,5 @@ private:
     CGObjectControl* m_ObjectControl = nullptr;
 
     CCamera* m_Camera = nullptr;
-
-
-
-
-
-
-public:
-
-    // #INPUTS do wymiany
-    bool s_Wp = false;
-    bool s_Sp = false;
-    bool s_Ap = false;
-    bool s_Dp = false;
 };
 

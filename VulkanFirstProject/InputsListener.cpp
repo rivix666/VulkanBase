@@ -15,22 +15,37 @@ void input::HandlePress(GLFWwindow* window, const int& key, const int& scancode,
     {
     case GLFW_KEY_W:
     {
-        g_Engine->s_Wp = true;
+        g_Engine->GetCamera()->MoveFreeCam(ECamMoveDir::FORWARD, true);
         break;
     }
     case GLFW_KEY_S:
     {
-        g_Engine->s_Sp = true;
+        g_Engine->GetCamera()->MoveFreeCam(ECamMoveDir::BACKWARD, true);
         break;
     }
     case GLFW_KEY_A:
     {
-        g_Engine->s_Ap = true;
+        g_Engine->GetCamera()->MoveFreeCam(ECamMoveDir::LEFT, true);
         break;
     }
     case GLFW_KEY_D:
     {
-        g_Engine->s_Dp = true;
+        g_Engine->GetCamera()->MoveFreeCam(ECamMoveDir::RIGHT, true);
+        break;
+    }
+    case GLFW_KEY_Q:
+    {
+        g_Engine->GetCamera()->MoveFreeCam(ECamMoveDir::DOWN, true);
+        break;
+    }
+    case GLFW_KEY_E:
+    {
+        g_Engine->GetCamera()->MoveFreeCam(ECamMoveDir::UP, true);
+        break;
+    }
+    case GLFW_KEY_LEFT_SHIFT:
+    {
+        g_Engine->GetCamera()->SetMoveSpeed(0.5f);
         break;
     }
     }
@@ -42,22 +57,42 @@ void input::HandleRelease(GLFWwindow* window, const int& key, const int& scancod
     {
     case GLFW_KEY_W:
     {
-        g_Engine->s_Wp = false;
+        g_Engine->GetCamera()->MoveFreeCam(ECamMoveDir::FORWARD, false);
         break;
     }
     case GLFW_KEY_S:
     {
-        g_Engine->s_Sp = false;
+        g_Engine->GetCamera()->MoveFreeCam(ECamMoveDir::BACKWARD, false);
         break;
     }
     case GLFW_KEY_A:
     {
-        g_Engine->s_Ap = false;
+        g_Engine->GetCamera()->MoveFreeCam(ECamMoveDir::LEFT, false);
         break;
     }
     case GLFW_KEY_D:
     {
-        g_Engine->s_Dp = false;
+        g_Engine->GetCamera()->MoveFreeCam(ECamMoveDir::RIGHT, false);
+        break;
+    }
+    case GLFW_KEY_Q:
+    {
+        g_Engine->GetCamera()->MoveFreeCam(ECamMoveDir::DOWN, false);
+        break;
+    }
+    case GLFW_KEY_E:
+    {
+        g_Engine->GetCamera()->MoveFreeCam(ECamMoveDir::UP, false);
+        break;
+    }
+    case GLFW_KEY_LEFT_SHIFT:
+    {
+        g_Engine->GetCamera()->SetMoveSpeed(0.1f);
+        break;
+    }
+    case GLFW_KEY_SPACE:
+    {
+        g_Engine->GetCamera()->SetUseFreeCam(!g_Engine->GetCamera()->UseFreeCam());
         break;
     }
     case GLFW_KEY_ESCAPE:
@@ -70,16 +105,12 @@ void input::HandleRelease(GLFWwindow* window, const int& key, const int& scancod
 
 void input::CursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
 {
-    //#FREE_CAMERA
-    //g_Engine->GetCamera()->AdjustHeadingPitch(0.0025f * xpos, 0.0025f * ypos);
-    LogD("XMouse "); LogD(xpos); LogD("\n");
-    LogD("YMouse "); LogD(ypos); LogD("\n");
-
-
     static double oldx = xpos;
     static double oldy = ypos;
 
-   // g_Engine->GetCamera()->MoveCamSpherical(0.0025f * (oldy - ypos), 0.0025f * (oldx - xpos));
+    g_Engine->GetCamera()->ProcessMouseMoveInput(xpos - oldx, oldy - ypos);
+    oldx = xpos;
+    oldy = ypos;
 }
 
 void input::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
@@ -89,7 +120,5 @@ void input::MouseButtonCallback(GLFWwindow* window, int button, int action, int 
 
 void input::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    LogD("Scroll "); LogD(yoffset); LogD("\n");
-
-   // g_Engine->GetCamera()->ChangeViewSphereRadius(yoffset);
+    g_Engine->GetCamera()->ChangeViewSphereRadius(yoffset);
 }

@@ -5,7 +5,7 @@ class CTechniqueManager;
 
 struct UniformBufferObject 
 {
-    //glm::mat4 model;
+    glm::mat4 model;
     glm::mat4 view;
     glm::mat4 proj;
 };
@@ -32,6 +32,8 @@ public:
 
     // Buffers
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+    bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+    void CopyBuffer(VkBuffer& srcBuffer, VkBuffer& dstBuffer, VkDeviceSize size);
 
     // Misc
     void PresentQueueWaitIdle();
@@ -120,9 +122,6 @@ public:
     bool CreateDescriptorSet();
 
     VkDescriptorSet m_DescriptorSet = nullptr;
-
-    // #VERTEX_BUFFERS
-    bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
 protected:
     //////////////////////////////////////////////////////////////////////////

@@ -3,6 +3,10 @@
 
 struct BaseVertex
 {
+    BaseVertex() = default;
+    BaseVertex(const glm::vec3& p, const glm::vec3& c)
+        : pos(p), color(c) {}
+
     glm::vec3 pos;
     glm::vec3 color;
 

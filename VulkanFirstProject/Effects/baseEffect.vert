@@ -8,7 +8,7 @@ layout(location = 0) out vec3 fragColor;
 
 layout(binding = 0) uniform UniformBufferObject 
 {
-    // mat4 model;
+    mat4 model;
     mat4 view;
     mat4 proj;
 } ubo;
@@ -20,9 +20,6 @@ out gl_PerVertex
 
 void main()
 {
-    //mat4 view_proj = ubo.proj * ubo.view;
-    //gl_Position = view_proj * vec4(inPosition, 1.0);
-
-    gl_Position = ubo.proj * ubo.view * vec4(inPosition, 1.0);
+    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
     fragColor = inColor;
 }

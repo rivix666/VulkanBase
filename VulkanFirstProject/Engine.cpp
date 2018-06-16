@@ -69,78 +69,20 @@ void CEngine::InitInputsListener()
     glfwSetInputMode(m_MainWnd, GLFW_CURSOR, GLFW_CURSOR_DISABLED/*GLFW_CURSOR_HIDDEN*/);
 }
 
- void CEngine::UpdateCamera()
- {
-     //#INPUT to wylcizanie do camery zmoe przeniesc jak bedzie juz vector
-     if (s_Wp)
-     {
-         m_Camera->AddToEye(0.0f, 0.0f, 0.1f);
-     }
-     if (s_Sp)
-     {
-         m_Camera->AddToEye(0.0f, 0.0f, -0.1f);
-     }
-     if (s_Ap)
-     {
-         m_Camera->AddToEye(-0.1f, 0.0f, 0.0f);
-     }
-     if (s_Dp)
-     {
-         m_Camera->AddToEye(0.1f, 0.0f, 0.0f);
-     }
- 
-     m_Camera->Update();
- 
- 
-     UniformBufferObject ubo = {};
-     ubo.view = m_Camera->ViewMatrix();
-     ubo.proj = m_Camera->ProjectionMatrix();
-   //  ubo.proj[1][1] *= -1;
+void CEngine::UpdateCamera()
+{
 
-//      ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-//      ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
- 
-     void* data;
-     vkMapMemory(m_Renderer->GetDevice(), m_Renderer->m_UniformBufferMemory, 0, sizeof(ubo), 0, &data);
-     memcpy(data, &ubo, sizeof(ubo));
-     vkUnmapMemory(m_Renderer->GetDevice(), m_Renderer->m_UniformBufferMemory);
- }
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+    m_Camera->Update();
 
 
+    UniformBufferObject ubo = {};
+    ubo.view = m_Camera->ViewMatrix();
+    ubo.proj = m_Camera->ProjectionMatrix();
+    ubo.model = glm::mat4(1.0f);
+    ubo.proj[1][1] *= -1;
 
-
-//#define GLM_FORCE_RADIANS
-//#include <glm/glm.hpp>
-//#include <glm/gtc/matrix_transform.hpp>
-//
-//#include <chrono>
-//
-//void CEngine::UpdateCamera()
-//{
-//  static auto startTime = std::chrono::high_resolution_clock::now();
-//
-//  auto currentTime = std::chrono::high_resolution_clock::now();
-//  float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-//
-//  UniformBufferObject ubo = {};
-//  ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-//  ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-//  ubo.proj = glm::perspective(glm::radians(45.0f), m_Renderer->GetSwapChainExtent().width / (float)m_Renderer->GetSwapChainExtent().height, 0.1f, 10.0f);
-//  ubo.proj[1][1] *= -1;
-//
-//  void* data;
-//  vkMapMemory(m_Renderer->GetDevice(), m_Renderer->m_UniformBufferMemory, 0, sizeof(ubo), 0, &data);
-//  memcpy(data, &ubo, sizeof(ubo));
-//  vkUnmapMemory(m_Renderer->GetDevice(), m_Renderer->m_UniformBufferMemory);
-//}
+    void* data;
+    vkMapMemory(m_Renderer->GetDevice(), m_Renderer->m_UniformBufferMemory, 0, sizeof(ubo), 0, &data);
+    memcpy(data, &ubo, sizeof(ubo));
+    vkUnmapMemory(m_Renderer->GetDevice(), m_Renderer->m_UniformBufferMemory);
+}

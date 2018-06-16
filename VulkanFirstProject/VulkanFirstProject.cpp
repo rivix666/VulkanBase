@@ -63,6 +63,7 @@ int _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, in
 
     // #TMP
     REGISTER_OBJ(0, new CGBaseObject());
+  //  REGISTER_OBJ(0, new CGBaseObject(123));
     g_Engine->GetRenderer()->RecreateCommandBuffer(); //#CMD_BUFF czy trzeba to wolac co register_obj, moz ejakis update? a co w takim razie z particlami?
 
     while (!glfwWindowShouldClose(window))

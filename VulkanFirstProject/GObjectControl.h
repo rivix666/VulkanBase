@@ -24,14 +24,6 @@ public:
 
     void RecordCommandBuffer(VkCommandBuffer& cmd_buff);
 
-    static bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-
-protected:
-    void CleanupBuffers(const uint& tech);
-    void RecreateBuffers(const uint& tech);
-    bool CreateVertexBuffer(const uint& tech);
-    bool CreateIndexBuffed(const uint& tech);
-
 private:
     void EnsureTechIdWillFit(const uint& tech_id);
 
@@ -42,12 +34,6 @@ private:
 
     // Device
     VkDevice m_Device = nullptr;
-
-    // Buffers
-    std::vector<VkBuffer> m_VertexBuffers;
-    std::vector<VkBuffer> m_IndexBuffers;
-    std::vector<VkDeviceMemory> m_VertexBuffersMemory;
-    std::vector<VkDeviceMemory> m_IndexBuffersMemory;
 
     // Objects
     TCacheVec m_SizeCacheVec;

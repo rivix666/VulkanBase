@@ -25,7 +25,7 @@ std::array<VkVertexInputAttributeDescription, 2>* BaseVertex::GetAttributeDescri
     {
         m_AttributeDesc[0].binding = 0;
         m_AttributeDesc[0].location = 0;
-        m_AttributeDesc[0].format = VK_FORMAT_R32G32_SFLOAT;
+        m_AttributeDesc[0].format = VK_FORMAT_R32G32B32_SFLOAT; //#INPUT_VERTEX_WAZNE pamietaj ot ym gonwie
         m_AttributeDesc[0].offset = offsetof(BaseVertex, pos);
 
         m_AttributeDesc[1].binding = 0;

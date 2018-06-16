@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "Camera.h"
 
+CCamera::CCamera()
+{
+    for (uint i = 0; i < (uint)ECamMoveDir::_COUNT_; i++)
+        m_MoveDirKeyState[i] = false;
+}
+
 void CCamera::SetPerspectiveProjection(float FOV, float aspectRatio, float zNear, float zFar)
 {
     FOV = FOV * (float)DEG_TO_RAD;
@@ -10,31 +16,71 @@ void CCamera::SetPerspectiveProjection(float FOV, float aspectRatio, float zNear
 
 void CCamera::Update()
 {
-    //#SPHERE_CAM
-     //MoveCamSpherical();
+    UpdateCameraVectors();
 
+    if (m_UseFreeCam)
+        m_ViewMtx = glm::lookAt(m_Eye, m_Eye + m_View, m_Up);
+    else
+        m_ViewMtx = glm::lookAt(m_Eye, m_View, m_Up);
+}
 
+void CCamera::SetUseFreeCam(bool use /*= true*/)
+{
+    static glm::vec3 free_view(1.0);
+    static glm::vec3 free_eye(1.0);
+    if (use)
+    {
+        m_Yaw = -90.0f;
+        m_Pitch = 0.0f;;
+        m_View = free_view;
+        m_Eye = free_eye;
+    }
+    else
+    {
+        free_eye = CameraPosition();
+        free_view = CameraView();
+        m_SphereCamPSI = -0.5f;
+        m_SphereCamFI = 0.0f;
+        m_SphereCamRadius = -10.0f;;
+        m_Eye = glm::vec3(0.0f, 5.0f, -25.0f);
+        m_View = glm::vec3(0.0f, 0.0f, 0.0f);
+    }
+    m_UseFreeCam = use;
+}
 
+void CCamera::ProcessMouseMoveInput(float xoffset, float yoffset)
+{
+    if (m_UseFreeCam)
+        MoveYawPitchFreeCam(xoffset, yoffset);
+    else
+        MoveCamSpherical(0.0025f * yoffset, 0.0025f * xoffset);
+}
 
-     //#FREE_CAMERA
+void CCamera::MoveFreeCam(ECamMoveDir dir, bool state)
+{
+    m_MoveDirKeyState[(uint)dir] = state;
+}
 
-//     glm::mat4 rotation_mtx = glm::rotate(glm::mat4(1.0f), m_Heading, glm::vec3(1.0f, 0.0f, 0.0f));
-//     rotation_mtx = glm::rotate(rotation_mtx, m_Pitch, glm::vec3(0.0f, 0.0f, 1.0f));
-// 
-//     D3DXMatrixRotationYawPitchRoll(&rotationMatrix, heading, pitch, 0);
-// 
-//     D3DXVec3TransformCoord(&view, &dV, &rotationMatrix);
-//     D3DXVec3TransformCoord(&up, &dU, &rotationMatrix);
-// 
-//     D3DXVec3Normalize(&forward, &view);
-//     D3DXVec3Cross(&strafeRight, &up, &view);
-//     D3DXVec3Normalize(&strafeRight, &strafeRight);
-// 
-//     view = eye + view;
+void CCamera::MoveYawPitchFreeCam(float xoffset, float yoffset)
+{
+    xoffset *= 0.1f;
+    yoffset *= 0.1f;
 
+    m_Yaw += xoffset;
+    m_Pitch += yoffset;
 
+    // Make sure that when pitch is out of bounds, screen doesn't get flipped
+  //  if (constrainPitch)
+ //   {
+        if (m_Pitch > 89.0f)
+            m_Pitch = 89.0f;
+        if (m_Pitch < -89.0f)
+            m_Pitch = -89.0f;
+   // }
 
-     m_ViewMtx = glm::lookAt(m_Eye, m_View, m_Up);
+    // Update Front, Right and Up Vectors using the updated Euler angles
+
+    // UpdateCameraVectors();
 }
 
 void CCamera::MoveCamSpherical(float psi, float fi)
@@ -50,14 +96,6 @@ void CCamera::MoveCamSpherical(float psi, float fi)
     m_SphereCamFI -= fi;
 }
 
-void CCamera::MoveCamSpherical()
-{
-    glm::vec3 temp(0.0f, 0.0f, 0.0f); // view
-    m_Eye.x = temp.x + m_SphereCamRadius * cos(m_SphereCamPSI) * cos(m_SphereCamFI);
-    m_Eye.y = temp.y + m_SphereCamRadius * sin(m_SphereCamPSI);
-    m_Eye.z = temp.z + m_SphereCamRadius * cos(m_SphereCamPSI) * sin(m_SphereCamFI);
-}
-
 void CCamera::ChangeViewSphereRadius(float r)
 {
     m_SphereCamRadius += r;
@@ -65,29 +103,53 @@ void CCamera::ChangeViewSphereRadius(float r)
         m_SphereCamRadius = 0;
 }
 
-void CCamera::AdjustHeadingPitch(float hRad, float pRad)
+void CCamera::UpdateCameraVectors()
 {
-    m_Heading += hRad;
-    m_Pitch += pRad;
-
-    // Keep heading and pitch betweem 0 and 2pi
-    if (m_Heading > TWO_PI) m_Heading -= (float)TWO_PI;
-    else if (m_Heading < 0) m_Heading = (float)TWO_PI + m_Heading;
-
-    if (m_Pitch > TWO_PI) m_Pitch -= (float)TWO_PI;
-    else if (m_Pitch < 0) m_Pitch = (float)TWO_PI + m_Pitch;
+    if (m_UseFreeCam)
+        UpdateFreeCamVectors();
+    else
+        UpdateCamSphericalVectors();
 }
 
-void CCamera::AddToView(float x, float y, float z)
+void CCamera::UpdateCamSphericalVectors()
 {
-    m_View.x += x;
-    m_View.y += y;
-    m_View.z += z;
+    m_View = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_Eye.x = m_View.x + m_SphereCamRadius * cos(m_SphereCamPSI) * cos(m_SphereCamFI);
+    m_Eye.y = m_View.y + m_SphereCamRadius * sin(m_SphereCamPSI);
+    m_Eye.z = m_View.z + m_SphereCamRadius * cos(m_SphereCamPSI) * sin(m_SphereCamFI);
 }
 
-void CCamera::AddToEye(float x, float y, float z)
+void CCamera::UpdateFreeCamVectors()
 {
-    m_Eye.x += x;
-    m_Eye.y += y;
-    m_Eye.z += z;
+    UpdateFreeCamPos();
+    UpdateFreeCamView();
+
+    // Update right and up
+    m_Right = glm::normalize(glm::cross(m_View, m_WorldUp));
+    m_Up = glm::normalize(glm::cross(m_Right, m_View));
+}
+
+void CCamera::UpdateFreeCamPos()
+{
+    if (m_MoveDirKeyState[(uint)ECamMoveDir::FORWARD])
+        m_Eye += m_View * m_MoveSpeed;
+    if (m_MoveDirKeyState[(uint)ECamMoveDir::BACKWARD])
+        m_Eye -= m_View * m_MoveSpeed;
+    if (m_MoveDirKeyState[(uint)ECamMoveDir::RIGHT])
+        m_Eye += m_Right * m_MoveSpeed;
+    if (m_MoveDirKeyState[(uint)ECamMoveDir::LEFT])
+        m_Eye -= m_Right * m_MoveSpeed;
+    if (m_MoveDirKeyState[(uint)ECamMoveDir::UP])
+        m_Eye += m_Up * m_MoveSpeed;
+    if (m_MoveDirKeyState[(uint)ECamMoveDir::DOWN])
+        m_Eye -= m_Up * m_MoveSpeed;
+}
+
+void CCamera::UpdateFreeCamView()
+{
+    glm::vec3 front;
+    front.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+    front.y = sin(glm::radians(m_Pitch));
+    front.z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+    m_View = glm::normalize(front);
 }
