@@ -18,6 +18,7 @@ public:
     virtual uint     GetVerticesCount() const = 0;
 
     virtual void* GetVerticesPtr() = 0;
+    virtual void* GetIndicesPtr() = 0;
 
     // #TECH chyba chodzilo o pointer m_Tech ale one moga zniknac, lepiej trzymac Id
     //virtual void ResolvePointers() const = 0;

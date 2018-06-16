@@ -1,4 +1,5 @@
 #pragma once
+
 class CCamera
 {
 public:
@@ -10,12 +11,14 @@ public:
 
     // View / Position
     void Update();
+
     void MoveCamSpherical(float psi, float fi);
     void ChangeViewSphereRadius(float r);
 
+    void AdjustHeadingPitch(float hRad, float pRad);
+
     void AddToView(float x, float y, float z);
     void AddToEye(float x, float y, float z);
-
 
     // Setters & Getters
     void SetEye(const glm::vec3& eye) { m_Eye = eye; }
@@ -32,15 +35,19 @@ private:
     // Move
     void MoveCamSpherical();
 
-    glm::mat4 m_ViewMtx;
-    glm::mat4 m_ProjectionMtx;
-    glm::mat4 m_InvProjectionMtx;
+    glm::mat4 m_ViewMtx = glm::mat4(1.0f);
+    glm::mat4 m_ProjectionMtx = glm::mat4(1.0f);
+    glm::mat4 m_InvProjectionMtx = glm::mat4(1.0f);
 
-    glm::vec3 m_Eye = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 m_Eye = glm::vec3(0.0f, 5.0f, -1.0f);
     glm::vec3 m_View = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    // Cam move attributes
+    //View parameters in radians
+    float m_Heading = 0.0f; 
+    float m_Pitch = 0.0f;;
+
+    // Cam sphere move attributes
     float m_SphereCamPSI = -0.5f;
     float m_SphereCamFI = 0.0f;
     float m_SphereCamRadius = -10.0f;;

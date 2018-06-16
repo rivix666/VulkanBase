@@ -155,7 +155,8 @@ copy /y $(ProjectDir)Effects\*.spv  $(OutDir)Effects\</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CCamera.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="InputsListener.h" />
     <ClInclude Include="TechniqueManager.h" />
     <ClInclude Include="GObjectControl.h" />
     <ClInclude Include="Engine.h" />
@@ -169,7 +170,8 @@ copy /y $(ProjectDir)Effects\*.spv  $(OutDir)Effects\</Command>
     <ClInclude Include="VulkanRenderer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CCamera.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="InputsListener.cpp" />
     <ClCompile Include="TechniqueManager.cpp" />
     <ClCompile Include="GObjectControl.cpp" />
     <ClCompile Include="Engine.cpp" />

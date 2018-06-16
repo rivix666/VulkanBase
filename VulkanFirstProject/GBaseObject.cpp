@@ -7,10 +7,18 @@ CGBaseObject::CGBaseObject()
 {
     m_Vertices = 
     {
-        { { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.f } },
-        { { 0.5f, -0.5f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
-        { { 0.5f, 0.5f, 0.0f },{ 0.0f, 0.0f, 0.0f } },
-        { { -0.5f, 0.5f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
+        { { -0.5f, -2.5f, -0.5f }, { 0.0f, 0.0f, 1.0f } },
+        { {  0.5f, -2.5f, -0.5f }, { 0.0f, 0.0f, 1.0f } },
+        { {  0.5f, -2.5f,  0.5f }, { 0.0f, 0.0f, 0.0f } },
+        { { -0.5f, -2.5f,  0.5f }, { 0.0f, 0.0f, 1.0f } },
+        //{ { -0.5f, -0.5f, -2.5f },{ 0.0f, 0.0f, 1.f } },
+        //{ {  0.5f, -0.5f, -2.5f },{ 0.0f, 0.0f, 1.0f } },
+        //{ {  0.5f,  0.5f, -2.5f },{ 0.0f, 0.0f, 0.0f } },
+        //{ { -0.5f,  0.5f, -2.5f },{ 0.0f, 0.0f, 1.0f } },
+    };
+
+    m_Indices = {
+        0, 1, 2, 2, 3, 0
     };
 
     m_TechId = s_TechId;
@@ -34,4 +42,9 @@ uint CGBaseObject::GetVerticesCount() const
 void* CGBaseObject::GetVerticesPtr() 
 {
     return &m_Vertices[0];
+}
+
+void* CGBaseObject::GetIndicesPtr()
+{
+    return &m_Indices[0];
 }

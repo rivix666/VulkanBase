@@ -1,4 +1,5 @@
 #pragma once
+#include "Camera.h"
 #include "VulkanRenderer.h"
 #include "GObjectControl.h"
 
@@ -13,10 +14,19 @@ public:
     void Frame();
     void UpdateScene();
 
-    inline HWND                GetHwnd() const { return m_Hwnd; }
-    inline GLFWwindow*         GetGlfwWindow() const { return m_MainWnd; }
-    inline CVulkanRenderer*    GetRenderer() const { return m_Renderer; }
-    inline CGObjectControl*    GetObjectControl() const { return m_ObjectControl; }
+    inline HWND GetHwnd() const { return m_Hwnd; }
+    inline GLFWwindow* GetGlfwWindow() const { return m_MainWnd; }
+    inline CVulkanRenderer* GetRenderer() const { return m_Renderer; }
+    inline CGObjectControl* GetObjectControl() const { return m_ObjectControl; }
+    inline VkDevice GetDevice() const { return m_Renderer != nullptr ? m_Renderer->GetDevice() : nullptr; }
+
+    inline CCamera* GetCamera() const { return m_Camera; }
+
+protected:
+    void InitInputsListener();
+
+
+    void UpdateCamera();
 
 private:
     HWND        m_Hwnd = nullptr;
@@ -24,5 +34,20 @@ private:
 
     CVulkanRenderer* m_Renderer = nullptr;
     CGObjectControl* m_ObjectControl = nullptr;
+
+    CCamera* m_Camera = nullptr;
+
+
+
+
+
+
+public:
+
+    // #INPUTS do wymiany
+    bool s_Wp = false;
+    bool s_Sp = false;
+    bool s_Ap = false;
+    bool s_Dp = false;
 };
 

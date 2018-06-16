@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "CCamera.h"
+#include "Camera.h"
 
 void CCamera::SetPerspectiveProjection(float FOV, float aspectRatio, float zNear, float zFar)
 {
@@ -10,8 +10,31 @@ void CCamera::SetPerspectiveProjection(float FOV, float aspectRatio, float zNear
 
 void CCamera::Update()
 {
-    MoveCamSpherical();
-    m_ViewMtx = glm::lookAtLH(m_Eye, m_View, m_Up);
+    //#SPHERE_CAM
+     //MoveCamSpherical();
+
+
+
+
+     //#FREE_CAMERA
+
+//     glm::mat4 rotation_mtx = glm::rotate(glm::mat4(1.0f), m_Heading, glm::vec3(1.0f, 0.0f, 0.0f));
+//     rotation_mtx = glm::rotate(rotation_mtx, m_Pitch, glm::vec3(0.0f, 0.0f, 1.0f));
+// 
+//     D3DXMatrixRotationYawPitchRoll(&rotationMatrix, heading, pitch, 0);
+// 
+//     D3DXVec3TransformCoord(&view, &dV, &rotationMatrix);
+//     D3DXVec3TransformCoord(&up, &dU, &rotationMatrix);
+// 
+//     D3DXVec3Normalize(&forward, &view);
+//     D3DXVec3Cross(&strafeRight, &up, &view);
+//     D3DXVec3Normalize(&strafeRight, &strafeRight);
+// 
+//     view = eye + view;
+
+
+
+     m_ViewMtx = glm::lookAt(m_Eye, m_View, m_Up);
 }
 
 void CCamera::MoveCamSpherical(float psi, float fi)
@@ -40,6 +63,19 @@ void CCamera::ChangeViewSphereRadius(float r)
     m_SphereCamRadius += r;
     if (m_SphereCamRadius > 0)
         m_SphereCamRadius = 0;
+}
+
+void CCamera::AdjustHeadingPitch(float hRad, float pRad)
+{
+    m_Heading += hRad;
+    m_Pitch += pRad;
+
+    // Keep heading and pitch betweem 0 and 2pi
+    if (m_Heading > TWO_PI) m_Heading -= (float)TWO_PI;
+    else if (m_Heading < 0) m_Heading = (float)TWO_PI + m_Heading;
+
+    if (m_Pitch > TWO_PI) m_Pitch -= (float)TWO_PI;
+    else if (m_Pitch < 0) m_Pitch = (float)TWO_PI + m_Pitch;
 }
 
 void CCamera::AddToView(float x, float y, float z)

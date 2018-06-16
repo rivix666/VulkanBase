@@ -24,10 +24,13 @@ public:
 
     void RecordCommandBuffer(VkCommandBuffer& cmd_buff);
 
+    static bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+
 protected:
     void CleanupBuffers(const uint& tech);
     void RecreateBuffers(const uint& tech);
     bool CreateVertexBuffer(const uint& tech);
+    bool CreateIndexBuffed(const uint& tech);
 
 private:
     void EnsureTechIdWillFit(const uint& tech_id);

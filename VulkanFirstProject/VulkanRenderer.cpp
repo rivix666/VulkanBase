@@ -46,6 +46,10 @@ bool CVulkanRenderer::Init()
         if (!CreateRenderPass())
             return Shutdown();
 
+        // #UNI_BUFF
+        if (!CreateDescriptorSetLayout())
+            return Shutdown();
+
         if (!InitTechniqueManager()) // #TECH przemyslec czy to dobry pomysl bo po co w sumie rejestrowac jak i tak wszyskto powstanei w jednym miejscu, chyba ze rozwiazanie hybrydowe?
             return Shutdown();
 
@@ -57,6 +61,17 @@ bool CVulkanRenderer::Init()
 
 //         if (!CreateVertexBuffer()) // #TECH to samo z bufforami trzeba to przemyslec jeszcze
 //             return Shutdown();
+
+
+        // #UNI_BUFF
+        if (!CreateUniformBuffer())
+            return Shutdown();
+
+        if (!CreateDescriptorPool())
+            return Shutdown();
+
+        if (!CreateDescriptorSet())
+            return Shutdown();
 
         if (!CreateCommandBuffers()) // #TECH to samo z bufforami trzeba to przemyslec jeszcze
             return Shutdown();
@@ -77,6 +92,21 @@ bool CVulkanRenderer::Shutdown()
 
     // Shutdown SwapChain, pipeline, renderpass
     CleanupSwapChain();
+
+    //#UNI_BUFF
+    //////////////////////////////////////////////////////////////////////////
+    if (m_DescriptorSetLayout)
+        vkDestroyDescriptorSetLayout(m_Device, m_DescriptorSetLayout, nullptr);
+
+    if (m_UniformBuffer)
+        vkDestroyBuffer(m_Device, m_UniformBuffer, nullptr);
+
+    if (m_UniformBufferMemory)
+        vkFreeMemory(m_Device, m_UniformBufferMemory, nullptr);
+
+    if (m_DescriptorPool)
+        vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
+    //////////////////////////////////////////////////////////////////////////
 
     // Shutdown Tech Mgr
     if (m_TechMgr)
@@ -537,6 +567,107 @@ bool CVulkanRenderer::RecreateSwapChainIfNeeded(const VkResult& result, bool all
         return true;
     }
     return false;
+}
+
+bool CVulkanRenderer::CreateDescriptorSetLayout()
+{
+    VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+    uboLayoutBinding.binding = 0;
+    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLayoutBinding.descriptorCount = 1;
+    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = 1;
+    layoutInfo.pBindings = &uboLayoutBinding;
+
+    if (VKRESULT(vkCreateDescriptorSetLayout(m_Device, &layoutInfo, nullptr, &m_DescriptorSetLayout))) 
+        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create descriptor set layout");
+
+    return true;
+}
+
+bool CVulkanRenderer::CreateUniformBuffer()
+{
+    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+    return CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffer, m_UniformBufferMemory);
+}
+
+bool CVulkanRenderer::CreateDescriptorPool()
+{
+    VkDescriptorPoolSize poolSize = {};
+    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSize.descriptorCount = 1;
+
+    VkDescriptorPoolCreateInfo poolInfo = {};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.poolSizeCount = 1;
+    poolInfo.pPoolSizes = &poolSize;
+    poolInfo.maxSets = 1;
+
+    if (VKRESULT(vkCreateDescriptorPool(m_Device, &poolInfo, nullptr, &m_DescriptorPool)))
+        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create descriptor pool");
+
+    return true;
+}
+
+bool CVulkanRenderer::CreateDescriptorSet()
+{
+    VkDescriptorSetLayout layouts[] = { m_DescriptorSetLayout };
+    VkDescriptorSetAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = m_DescriptorPool;
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = layouts;
+
+    if (VKRESULT(vkAllocateDescriptorSets(m_Device, &allocInfo, &m_DescriptorSet)))
+        return utils::FatalError(g_Engine->GetHwnd(), "Failed to allocate descriptor set");
+
+
+    VkDescriptorBufferInfo bufferInfo = {};
+    bufferInfo.buffer = m_UniformBuffer;
+    bufferInfo.offset = 0;
+    bufferInfo.range = sizeof(UniformBufferObject);
+
+    VkWriteDescriptorSet descriptorWrite = {};
+    descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrite.dstSet = m_DescriptorSet;
+    descriptorWrite.dstBinding = 0;
+    descriptorWrite.dstArrayElement = 0;
+    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrite.descriptorCount = 1;
+    descriptorWrite.pBufferInfo = &bufferInfo;
+
+    vkUpdateDescriptorSets(m_Device, 1, &descriptorWrite, 0, nullptr);
+    return true;
+}
+
+bool CVulkanRenderer::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+{
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if (VKRESULT(vkCreateBuffer(m_Device, &bufferInfo, nullptr, &buffer)))
+        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create buffer");
+
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(m_Device, buffer, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
+
+    if (VKRESULT(vkAllocateMemory(m_Device, &allocInfo, nullptr, &bufferMemory)))
+        return utils::FatalError(g_Engine->GetHwnd(), "Failed to allocate buffer memory");
+
+    vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
+    return true;
 }
 
 bool CVulkanRenderer::SubmitDrawCommands(const uint32_t& imageIndex, VkSubmitInfo& submitInfo)

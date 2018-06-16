@@ -3,6 +3,13 @@
 
 class CTechniqueManager;
 
+struct UniformBufferObject 
+{
+    //glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
+};
+
 class CVulkanRenderer
 {
 public:
@@ -92,6 +99,35 @@ protected:
 
     void CleanupSwapChain();
     bool RecreateSwapChainIfNeeded(const VkResult& result, bool allow_suboptimal = true);
+
+    //#UNI_BUFF
+    //////////////////////////////////////////////////////////////////////////
+public:
+    bool CreateDescriptorSetLayout();
+
+    VkDescriptorSetLayout m_DescriptorSetLayout = nullptr;
+
+
+    bool CreateUniformBuffer();
+
+    VkBuffer m_UniformBuffer = nullptr;
+    VkDeviceMemory m_UniformBufferMemory = nullptr;
+
+    bool CreateDescriptorPool();
+
+    VkDescriptorPool m_DescriptorPool = nullptr;
+
+    bool CreateDescriptorSet();
+
+    VkDescriptorSet m_DescriptorSet = nullptr;
+
+    // #VERTEX_BUFFERS
+    bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+
+protected:
+    //////////////////////////////////////////////////////////////////////////
+
+
 
     // Render
     bool SubmitDrawCommands(const uint32_t& imageIndex, VkSubmitInfo& submitInfo);
