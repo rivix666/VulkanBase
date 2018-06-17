@@ -165,19 +165,19 @@ void CGBaseObject::CreateVertexBuffer()
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    g_Engine->GetRenderer()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+    g_Engine->Renderer()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
     void* data;
-    vkMapMemory(g_Engine->GetDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+    vkMapMemory(g_Engine->Device(), stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, GetVerticesPtr(), (size_t)bufferSize);
-    vkUnmapMemory(g_Engine->GetDevice(), stagingBufferMemory);
+    vkUnmapMemory(g_Engine->Device(), stagingBufferMemory);
 
-    g_Engine->GetRenderer()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VertexBuffer, m_VertexBufferMemory);
+    g_Engine->Renderer()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VertexBuffer, m_VertexBufferMemory);
 
-    g_Engine->GetRenderer()->CopyBuffer(stagingBuffer, m_VertexBuffer, bufferSize);
+    g_Engine->Renderer()->CopyBuffer(stagingBuffer, m_VertexBuffer, bufferSize);
 
-    vkDestroyBuffer(g_Engine->GetDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(g_Engine->GetDevice(), stagingBufferMemory, nullptr);
+    vkDestroyBuffer(g_Engine->Device(), stagingBuffer, nullptr);
+    vkFreeMemory(g_Engine->Device(), stagingBufferMemory, nullptr);
 }
 
 void CGBaseObject::CreateIndexBuffer()
@@ -189,17 +189,17 @@ void CGBaseObject::CreateIndexBuffer()
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    g_Engine->GetRenderer()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+    g_Engine->Renderer()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
     void* data;
-    vkMapMemory(g_Engine->GetDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+    vkMapMemory(g_Engine->Device(), stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, GetIndicesPtr(), (size_t)bufferSize);
-    vkUnmapMemory(g_Engine->GetDevice(), stagingBufferMemory);
+    vkUnmapMemory(g_Engine->Device(), stagingBufferMemory);
 
-    g_Engine->GetRenderer()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_IndexBuffer, m_IndexBufferMemory);
+    g_Engine->Renderer()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_IndexBuffer, m_IndexBufferMemory);
 
-    g_Engine->GetRenderer()->CopyBuffer(stagingBuffer, m_IndexBuffer, bufferSize);
+    g_Engine->Renderer()->CopyBuffer(stagingBuffer, m_IndexBuffer, bufferSize);
 
-    vkDestroyBuffer(g_Engine->GetDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(g_Engine->GetDevice(), stagingBufferMemory, nullptr);
+    vkDestroyBuffer(g_Engine->Device(), stagingBuffer, nullptr);
+    vkFreeMemory(g_Engine->Device(), stagingBufferMemory, nullptr);
 }

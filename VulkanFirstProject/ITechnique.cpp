@@ -7,7 +7,7 @@ ITechnique::~ITechnique()
 
 bool ITechnique::Init()
 {
-    m_Renderer = g_Engine->GetRenderer();
+    m_Renderer = g_Engine->Renderer();
 
     if (!CreateGraphicsPipeline())
         return Shutdown();
@@ -92,7 +92,7 @@ bool ITechnique::CreateGraphicsPipeline()
     //pipelineInfo.basePipelineIndex = -1; // Optional
 
     if (VKRESULT(vkCreateGraphicsPipelines(m_Renderer->GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline)))
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create graphics pipeline");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to create graphics pipeline");
 
     return true;
 }
@@ -233,7 +233,7 @@ void ITechnique::GetPipelineLayoutDesc(VkPipelineLayoutCreateInfo& pipelineLayou
     // #UNI_BUFF tutaj wazne oooo
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &g_Engine->GetRenderer()->m_DescriptorSetLayout;
+    pipelineLayoutInfo.pSetLayouts = &g_Engine->Renderer()->m_DescriptorSetLayout;
 }
 
 bool ITechnique::CreatePipelineLayout()
@@ -241,8 +241,8 @@ bool ITechnique::CreatePipelineLayout()
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     GetPipelineLayoutDesc(pipelineLayoutInfo);
 
-    if (VKRESULT(vkCreatePipelineLayout(g_Engine->GetRenderer()->GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout)))
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create pipeline layout");
+    if (VKRESULT(vkCreatePipelineLayout(g_Engine->Renderer()->GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout)))
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to create pipeline layout");
 
     return true;
 }

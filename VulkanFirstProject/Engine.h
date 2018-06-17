@@ -10,30 +10,30 @@ public:
     CEngine(GLFWwindow* window);
     ~CEngine();
 
+    // Init
     bool Init();
 
+    // Frame
     void Frame();
     void UpdateScene();
 
-    inline HWND GetHwnd() const { return m_Hwnd; }
-    inline GLFWwindow* GetGlfwWindow() const { return m_MainWnd; }
-    inline CVulkanRenderer* GetRenderer() const { return m_Renderer; }
-    inline CGObjectControl* GetObjectControl() const { return m_ObjectControl; }
-    inline VkDevice GetDevice() const { return m_Renderer != nullptr ? m_Renderer->GetDevice() : nullptr; }
+    // Getters
+    inline HWND Hwnd() const { return m_Hwnd; }
+    inline GLFWwindow* GlfwWindow() const { return m_MainWnd; }
+    inline CVulkanRenderer* Renderer() const { return m_Renderer; }
+    inline CGObjectControl* ObjectControl() const { return m_ObjectControl; }
+    inline VkDevice Device() const { return m_Renderer != nullptr ? m_Renderer->GetDevice() : nullptr; }
 
-    inline CCamera* GetCamera() const { return m_Camera; }
-    inline const CTimer& GetTimer() const { return m_FrameTimer; }
-    inline double GetLastFrameTime() const { return m_LastFrameTime; }
+    inline CCamera* Camera() const { return m_Camera; }
+    inline const CTimer& Timer() const { return m_FrameTimer; }
+    inline double LastFrameTime() const { return m_LastFrameTime; }
 
 protected:
-    void InitInputsListener();
-
-
     void UpdateCamera();
 
 private:
     // Wnd
-    HWND        m_Hwnd = nullptr;
+    HWND m_Hwnd = nullptr;
     GLFWwindow* m_MainWnd = nullptr;
 
     // Systems Managers

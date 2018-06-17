@@ -152,7 +152,7 @@ void CCamera::UpdateFreeCamVectors()
 
 void CCamera::UpdateFreeCamPos()
 {
-    float velocity = m_MoveSpeed * g_Engine->GetLastFrameTime();
+    float velocity = m_MoveSpeed * g_Engine->LastFrameTime();
     if (m_MoveDirKeyState[(uint)ECamMoveDir::FORWARD])
         m_Eye += m_View * velocity;
     if (m_MoveDirKeyState[(uint)ECamMoveDir::BACKWARD])

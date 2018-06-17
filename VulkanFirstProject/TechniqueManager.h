@@ -2,7 +2,7 @@
 
 class ITechnique;
 
-#define REGISTER_TECH(lay_struct_name, tech) { g_Engine->GetRenderer()->GetTechMgr()->RegisterTechnique(#lay_struct_name, tech) }
+#define REGISTER_TECH(lay_struct_name, tech) { g_Engine->Renderer()->GetTechMgr()->RegisterTechnique(#lay_struct_name, tech) }
 
 class CTechniqueManager
 {

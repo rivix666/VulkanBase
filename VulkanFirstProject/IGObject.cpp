@@ -21,14 +21,14 @@ bool IGObject::CreateBuffers()
 void IGObject::CleanupBuffers()
 {
     if (m_VertexBuffer)
-        vkDestroyBuffer(g_Engine->GetDevice(), m_VertexBuffer, nullptr);
+        vkDestroyBuffer(g_Engine->Device(), m_VertexBuffer, nullptr);
 
     if (m_VertexBufferMemory)
-        vkFreeMemory(g_Engine->GetDevice(), m_VertexBufferMemory, nullptr);
+        vkFreeMemory(g_Engine->Device(), m_VertexBufferMemory, nullptr);
 
     if (m_IndexBuffer)
-        vkDestroyBuffer(g_Engine->GetDevice(), m_IndexBuffer, nullptr);
+        vkDestroyBuffer(g_Engine->Device(), m_IndexBuffer, nullptr);
 
     if (m_IndexBufferMemory)
-        vkFreeMemory(g_Engine->GetDevice(), m_IndexBufferMemory, nullptr);
+        vkFreeMemory(g_Engine->Device(), m_IndexBufferMemory, nullptr);
 }

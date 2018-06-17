@@ -3,10 +3,10 @@
 class IGObject;
 class ITechnique;
 
-#define REGISTER_OBJ(obj) { g_Engine->GetObjectControl()->RegisterObject(obj); }
-#define REGISTER_OBJ(tech, obj) { g_Engine->GetObjectControl()->RegisterObject(tech, obj); }
+#define REGISTER_OBJ(obj) { g_Engine->ObjectControl()->RegisterObject(obj); }
+#define REGISTER_OBJ(tech, obj) { g_Engine->ObjectControl()->RegisterObject(tech, obj); }
 /*#define REGISTER_OBJ_LAY(#v_layout, obj) {  }*/ // #TECH tutaj chcialem zrobic rejestracje obiektu rpzez jego vertex layout ale z jevnego vertex layoutu moze korzystac kilka technik...
-#define UNREGISTER_OBJ(tech, obj) { g_Engine->GetObjectControl()->UnregisterObject(tech, obj); }
+#define UNREGISTER_OBJ(tech, obj) { g_Engine->ObjectControl()->UnregisterObject(tech, obj); }
 
 class CGObjectControl
 {

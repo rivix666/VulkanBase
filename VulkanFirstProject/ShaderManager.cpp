@@ -10,9 +10,9 @@ CShaderManager::CShaderManager(const SShaderMgrParams& params)
 CShaderManager::~CShaderManager()
 {
     if (m_FragShaderModule)
-        vkDestroyShaderModule(g_Engine->GetRenderer()->GetDevice(), m_FragShaderModule, nullptr);
+        vkDestroyShaderModule(g_Engine->Renderer()->GetDevice(), m_FragShaderModule, nullptr);
     if (m_VertShaderModule)
-        vkDestroyShaderModule(g_Engine->GetRenderer()->GetDevice(), m_VertShaderModule, nullptr);
+        vkDestroyShaderModule(g_Engine->Renderer()->GetDevice(), m_VertShaderModule, nullptr);
 }
 
 void CShaderManager::Initialize(const SShaderMgrParams& params)
@@ -62,8 +62,8 @@ VkShaderModule CShaderManager::CreateShaderModule(const std::vector<char>& code)
     createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
     VkShaderModule shaderModule = nullptr;
-    if (VKRESULT(vkCreateShaderModule(g_Engine->GetRenderer()->GetDevice(), &createInfo, nullptr, &shaderModule))) 
-        utils::FatalError(g_Engine->GetHwnd(), "Failed to create shader module");
+    if (VKRESULT(vkCreateShaderModule(g_Engine->Renderer()->GetDevice(), &createInfo, nullptr, &shaderModule))) 
+        utils::FatalError(g_Engine->Hwnd(), "Failed to create shader module");
 
     return shaderModule;
 }
@@ -73,7 +73,7 @@ bool CShaderManager::ReadFile(const char* filename, std::vector<char>& out)
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) 
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to open file");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to open file");
 
     size_t fileSize = (size_t)file.tellg();
     out.resize(fileSize);

@@ -68,7 +68,7 @@ namespace utils
         ws += std::to_wstring(1000.0 / spf);
 
         // Camera pos
-        glm::vec3 cam_pos = g_Engine->GetCamera()->CameraPosition();
+        glm::vec3 cam_pos = g_Engine->Camera()->CameraPosition();
         ws += L" | X: ";
         ws += std::to_wstring(cam_pos.x);
         ws += L" Y: ";

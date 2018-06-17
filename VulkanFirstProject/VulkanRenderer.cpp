@@ -221,7 +221,7 @@ uint32_t CVulkanRenderer::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFl
             return i;
     }
 
-    utils::FatalError(g_Engine->GetHwnd(), "Failed to find suitable memory type");
+    utils::FatalError(g_Engine->Hwnd(), "Failed to find suitable memory type");
     return 0;
 }
 
@@ -234,7 +234,7 @@ bool CVulkanRenderer::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
     if (VKRESULT(vkCreateBuffer(m_Device, &bufferInfo, nullptr, &buffer)))
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create buffer");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to create buffer");
 
     VkMemoryRequirements memRequirements;
     vkGetBufferMemoryRequirements(m_Device, buffer, &memRequirements);
@@ -245,7 +245,7 @@ bool CVulkanRenderer::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
     allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
     if (VKRESULT(vkAllocateMemory(m_Device, &allocInfo, nullptr, &bufferMemory)))
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to allocate buffer memory");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to allocate buffer memory");
 
     vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
     return true;
@@ -280,11 +280,11 @@ bool CVulkanRenderer::CheckAvailableExtensions()
 {
     uint32_t extensions_count;
     if (VKRESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensions_count, nullptr)))
-        return utils::FatalError(g_Engine->GetHwnd(), L"Could not get the number of Instance extensions");
+        return utils::FatalError(g_Engine->Hwnd(), L"Could not get the number of Instance extensions");
 
     std::vector<VkExtensionProperties> availableExtensions(extensions_count);
     if (VKRESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensions_count, &availableExtensions[0])))
-        return utils::FatalError(g_Engine->GetHwnd(), L"Could not get the list of Instance extensions");
+        return utils::FatalError(g_Engine->Hwnd(), L"Could not get the list of Instance extensions");
 
 #ifdef _DEBUG
     LogD("Available extensions:\n");
@@ -368,7 +368,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportFn(VkDebugReportFlagsEXT msgFlags,
     std::string str = "Could not create vulkan instance:\n\n";
     str += pMsg;
     LogD(pMsg);
-    utils::FatalError(g_Engine->GetHwnd(), str.c_str());
+    utils::FatalError(g_Engine->Hwnd(), str.c_str());
     return VK_FALSE;
 }
 
@@ -402,7 +402,7 @@ bool CVulkanRenderer::InitVkInstance()
 {
 #ifdef _DEBUG
     if (!CheckValidationLayerSupport())
-        return utils::FatalError(g_Engine->GetHwnd(), L"Validation layers requested, but not available");
+        return utils::FatalError(g_Engine->Hwnd(), L"Validation layers requested, but not available");
 #endif
 
     VkApplicationInfo appInfo = {};
@@ -425,7 +425,7 @@ bool CVulkanRenderer::InitVkInstance()
     createInfo.ppEnabledExtensionNames = m_ReqInstanceExt.data();
 
     if (VKRESULT(vkCreateInstance(&createInfo, nullptr, &m_Instance)))
-        return utils::FatalError(g_Engine->GetHwnd(), L"Could not create vulkan instance");
+        return utils::FatalError(g_Engine->Hwnd(), L"Could not create vulkan instance");
 
 #ifdef _DEBUG
     VkDebugReportCallbackCreateInfoEXT createDebugInfo = {};
@@ -436,7 +436,7 @@ bool CVulkanRenderer::InitVkInstance()
     createDebugInfo.pUserData = nullptr;
 
     if (VKRESULT(CreateDebugReportCallbackEXT(&createDebugInfo, nullptr, &m_DebugCallback)))
-        return utils::FatalError(g_Engine->GetHwnd(), L"Failed to set up debug callback");
+        return utils::FatalError(g_Engine->Hwnd(), L"Failed to set up debug callback");
 #endif
 
     return true;
@@ -445,7 +445,7 @@ bool CVulkanRenderer::InitVkInstance()
 bool CVulkanRenderer::InitWindowSurface()
 {
     if (VKRESULT(glfwCreateWindowSurface(m_Instance, m_Window, nullptr, &m_Surface)))
-        return utils::FatalError(g_Engine->GetHwnd(), L"Failed to create window surface");
+        return utils::FatalError(g_Engine->Hwnd(), L"Failed to create window surface");
 
     // glfwCreateWindowSurface - whats going on under this method
     //////////////////////////////////////////////////////////////////////////
@@ -599,7 +599,7 @@ void CVulkanRenderer::RecreateSwapChain()
     CreateCommandBuffers();
 
     // Update projection matrices
-    g_Engine->GetCamera()->SetPerspectiveProjection(FOV, (float)m_SwapChainExtent.width / (float)m_SwapChainExtent.height, Z_NEAR, Z_FAR);
+    g_Engine->Camera()->SetPerspectiveProjection(FOV, (float)m_SwapChainExtent.width / (float)m_SwapChainExtent.height, Z_NEAR, Z_FAR);
 }
 
 void CVulkanRenderer::CleanupSwapChain()
@@ -641,7 +641,7 @@ bool CVulkanRenderer::RecreateSwapChainIfNeeded(const VkResult& result, bool all
     }
     else if (result != VK_SUCCESS && (allow_suboptimal && result != VK_SUBOPTIMAL_KHR))
     {
-        utils::FatalError(g_Engine->GetHwnd(), "Failed to acquire swap chain image");
+        utils::FatalError(g_Engine->Hwnd(), "Failed to acquire swap chain image");
         return true;
     }
     return false;
@@ -670,7 +670,7 @@ bool CVulkanRenderer::CreateDescriptorSetLayout()
     layoutInfo.pBindings = bindings.data();
 
     if (VKRESULT(vkCreateDescriptorSetLayout(m_Device, &layoutInfo, nullptr, &m_DescriptorSetLayout))) 
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create descriptor set layout");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to create descriptor set layout");
 
     return true;
 }
@@ -696,7 +696,7 @@ bool CVulkanRenderer::CreateDescriptorPool()
     poolInfo.maxSets = 1;
 
     if (VKRESULT(vkCreateDescriptorPool(m_Device, &poolInfo, nullptr, &m_DescriptorPool)))
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create descriptor pool");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to create descriptor pool");
 
     return true;
 }
@@ -711,7 +711,7 @@ bool CVulkanRenderer::CreateDescriptorSet()
     allocInfo.pSetLayouts = layouts;
 
     if (VKRESULT(vkAllocateDescriptorSets(m_Device, &allocInfo, &m_DescriptorSet)))
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to allocate descriptor set");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to allocate descriptor set");
 
 
     VkDescriptorBufferInfo bufferInfo = {};
@@ -753,7 +753,7 @@ bool CVulkanRenderer::CreateTextureImage() //#IMAGES image mgr??
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     if (!pixels) 
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to load texture image");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to load texture image");
 
     //#MIPMAPS
     m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
@@ -801,7 +801,7 @@ bool CVulkanRenderer::CreateImage(uint32_t width, uint32_t height, uint32_t mipL
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
     if (VKRESULT(vkCreateImage(m_Device, &imageInfo, nullptr, &image)))
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create image");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to create image");
     
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(m_Device, image, &memRequirements);
@@ -812,7 +812,7 @@ bool CVulkanRenderer::CreateImage(uint32_t width, uint32_t height, uint32_t mipL
     allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
     if (VKRESULT(vkAllocateMemory(m_Device, &allocInfo, nullptr, &imageMemory)))
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to allocate image memory");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to allocate image memory");
     
     vkBindImageMemory(m_Device, image, imageMemory, 0);
 }
@@ -874,7 +874,7 @@ void CVulkanRenderer::TransitionImageLayout(VkImage image, VkFormat format, VkIm
     }
     else
     {
-        utils::FatalError(g_Engine->GetHwnd(), "Unsupported layout transition");
+        utils::FatalError(g_Engine->Hwnd(), "Unsupported layout transition");
     }
 
     vkCmdPipelineBarrier(
@@ -971,7 +971,7 @@ VkImageView CVulkanRenderer::CreateImageView(VkImage image, VkFormat format, VkI
     VkImageView imageView;
     if (VKRESULT(vkCreateImageView(m_Device, &viewInfo, nullptr, &imageView)))
     {
-        utils::FatalError(g_Engine->GetHwnd(), "Failed to create texture image view");
+        utils::FatalError(g_Engine->Hwnd(), "Failed to create texture image view");
         return nullptr;
     }
 
@@ -999,7 +999,7 @@ bool CVulkanRenderer::CreateTextureSampler()
     samplerInfo.mipLodBias = 0; // Optional
 
     if (VKRESULT(vkCreateSampler(m_Device, &samplerInfo, nullptr, &m_TextureSampler)))
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create texture sampler");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to create texture sampler");
 
     return true;
 }
@@ -1118,7 +1118,7 @@ VkFormat CVulkanRenderer::FindSupportedFormat(const std::vector<VkFormat>& candi
             return format;
     }
 
-    utils::FatalError(g_Engine->GetHwnd(), "Failed to find supported format");
+    utils::FatalError(g_Engine->Hwnd(), "Failed to find supported format");
     return VkFormat();
 }
 
@@ -1147,7 +1147,7 @@ bool CVulkanRenderer::SubmitDrawCommands(const uint32_t& imageIndex, VkSubmitInf
     submitInfo.pSignalSemaphores = signalSemaphores;
 
     if (VKRESULT(vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE)))    
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to submit draw command buffer");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to submit draw command buffer");
 
     return true;
 }
@@ -1207,7 +1207,7 @@ bool CVulkanRenderer::CreateSwapChain()
     }
 
     if (VKRESULT(vkCreateSwapchainKHR(m_Device, &createInfo, nullptr, &m_SwapChain)))
-        return utils::FatalError(g_Engine->GetHwnd(), L"Failed to create swap chain");
+        return utils::FatalError(g_Engine->Hwnd(), L"Failed to create swap chain");
 
     vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &imageCount, nullptr);
     m_SwapChainImagesVec.resize(imageCount);
@@ -1323,7 +1323,7 @@ bool CVulkanRenderer::PickPhysicalDevice()
     vkEnumeratePhysicalDevices(m_Instance, &deviceCount, nullptr);
 
     if (deviceCount == 0)
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to find GPUs with Vulkan support");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to find GPUs with Vulkan support");
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(m_Instance, &deviceCount, devices.data());
@@ -1355,7 +1355,7 @@ bool CVulkanRenderer::PickPhysicalDevice()
     }
 
     if (m_PhysicalDevice == VK_NULL_HANDLE)
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to find a suitable GPU");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to find a suitable GPU");
 
     return true;
 }
@@ -1418,7 +1418,7 @@ bool CVulkanRenderer::CreateRenderPass()
     renderPassInfo.pDependencies = &dependency;
 
     if (vkCreateRenderPass(m_Device, &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS) 
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create render pass");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to create render pass");
 
     return true;
 }
@@ -1444,7 +1444,7 @@ bool CVulkanRenderer::CreateFramebuffers()
         framebufferInfo.layers = 1;
 
         if (VKRESULT(vkCreateFramebuffer(m_Device, &framebufferInfo, nullptr, &m_SwapChainFramebuffersVec[i])))
-            return utils::FatalError(g_Engine->GetHwnd(), "Failed to create framebuffer");
+            return utils::FatalError(g_Engine->Hwnd(), "Failed to create framebuffer");
     }
 
     return true;
@@ -1460,7 +1460,7 @@ bool CVulkanRenderer::CreateCommandPool()
     poolInfo.flags = 0; // Optional
 
     if (VKRESULT(vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_CommandPool)))
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create command pool");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to create command pool");
 
     return true;
 }
@@ -1481,7 +1481,7 @@ bool CVulkanRenderer::CreateCommandBuffers()
     // VK_COMMAND_BUFFER_LEVEL_SECONDARY : Cannot be submitted directly, but can be called from primary command buffers.
 
     if (VKRESULT(vkAllocateCommandBuffers(m_Device, &allocInfo, m_CommandBuffers.data())))
-        return utils::FatalError(g_Engine->GetHwnd(), "failed to allocate command buffers!");
+        return utils::FatalError(g_Engine->Hwnd(), "failed to allocate command buffers!");
 
     // Starting command buffer recording
     for (size_t i = 0; i < m_CommandBuffers.size(); i++) 
@@ -1492,7 +1492,7 @@ bool CVulkanRenderer::CreateCommandBuffers()
         beginInfo.pInheritanceInfo = nullptr; // Optional
 
         if (VKRESULT(vkBeginCommandBuffer(m_CommandBuffers[i], &beginInfo)))
-            return utils::FatalError(g_Engine->GetHwnd(), "Failed to begin recording command buffer");
+            return utils::FatalError(g_Engine->Hwnd(), "Failed to begin recording command buffer");
 
         // Starting a render pass
         VkRenderPassBeginInfo renderPassInfo = {};
@@ -1510,8 +1510,8 @@ bool CVulkanRenderer::CreateCommandBuffers()
 
         // Record
         vkCmdBeginRenderPass(m_CommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        if (g_Engine->GetObjectControl()) //#CMD_BUFF to przemyslec ifa albo dac wyzej
-        g_Engine->GetObjectControl()->RecordCommandBuffer(m_CommandBuffers[i]);
+        if (g_Engine->ObjectControl()) //#CMD_BUFF to przemyslec ifa albo dac wyzej
+        g_Engine->ObjectControl()->RecordCommandBuffer(m_CommandBuffers[i]);
         vkCmdEndRenderPass(m_CommandBuffers[i]);
 
         // DEFAULT
@@ -1527,7 +1527,7 @@ bool CVulkanRenderer::CreateCommandBuffers()
         // vkCmdEndRenderPass(m_CommandBuffers[i]);
 
         if (VKRESULT(vkEndCommandBuffer(m_CommandBuffers[i])))
-            return utils::FatalError(g_Engine->GetHwnd(), "Failed to record command buffer");
+            return utils::FatalError(g_Engine->Hwnd(), "Failed to record command buffer");
     }
     
     return true;
@@ -1540,7 +1540,7 @@ bool CVulkanRenderer::CreateSemaphores()
 
     if (VKRESULT(vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore)) ||
         VKRESULT(vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore)))
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create semaphores");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to create semaphores");
 
     return true;
 }
@@ -1601,7 +1601,7 @@ bool CVulkanRenderer::CreateLogicalDevice()
 #endif
 
     if (VKRESULT(vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device)))
-        return utils::FatalError(g_Engine->GetHwnd(), "Failed to create logical device");
+        return utils::FatalError(g_Engine->Hwnd(), "Failed to create logical device");
 
     // Retrieving queue handles
     vkGetDeviceQueue(m_Device, indices.graphicsFamily, 0, &m_GraphicsQueue);

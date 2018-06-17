@@ -19,6 +19,8 @@ CEngine::~CEngine()
         }
         m_Renderer->Shutdown();
         DELETE(m_Renderer);
+
+        SAFE_DELETE(m_Camera);
     }
 }
 
@@ -27,7 +29,7 @@ bool CEngine::Init()
     if (m_MainWnd)
     {
         m_Hwnd = glfwGetWin32Window(m_MainWnd);
-        InitInputsListener();
+        input::InitInputListeners(m_MainWnd);
 
         m_Renderer = new CVulkanRenderer(m_MainWnd);
         if (!m_Renderer->Init())
@@ -35,7 +37,6 @@ bool CEngine::Init()
 
         m_ObjectControl = new CGObjectControl(m_Renderer->GetDevice());
         m_Camera = new CCamera();
-
         return true;
     }
     return false;
@@ -62,19 +63,7 @@ void CEngine::UpdateScene()
     UpdateCamera();
 }
 
-void CEngine::InitInputsListener() //#INPUT to movnac do constructora input listenersa
-{
-    // Set keyboard
-    glfwSetKeyCallback(m_MainWnd, input::KeyCallback);
-
-    // Set mouse
-    glfwSetCursorPosCallback(m_MainWnd, input::CursorPositionCallback);
-    glfwSetMouseButtonCallback(m_MainWnd, input::MouseButtonCallback);
-    glfwSetScrollCallback(m_MainWnd, input::ScrollCallback);
-    glfwSetInputMode(m_MainWnd, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-}
-
-void CEngine::UpdateCamera()
+void CEngine::UpdateCamera() //#CAMERA posprzatac
 {
     m_Camera->Update();
 

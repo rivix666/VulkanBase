@@ -6,7 +6,7 @@
 CGObjectControl::CGObjectControl(VkDevice device)
     : m_Device(device)
 {
-    uint tech_count = g_Engine->GetRenderer()->GetTechMgr()->TechniquesCount();
+    uint tech_count = g_Engine->Renderer()->GetTechMgr()->TechniquesCount();
     m_TechToObjVec.resize(tech_count);
     m_SizeCacheVec.resize(tech_count);
 }
@@ -62,7 +62,7 @@ void CGObjectControl::UnregisterObject(const uint& tech, IGObject* obj)
 
 void CGObjectControl::RecordCommandBuffer(VkCommandBuffer& cmd_buff)
 {
-    auto tech_mgr = g_Engine->GetRenderer()->GetTechMgr();
+    auto tech_mgr = g_Engine->Renderer()->GetTechMgr();
     uint tech_count = m_TechToObjVec.size();
     for (uint i = 0; i < tech_count; i++)
     {
@@ -84,14 +84,14 @@ void CGObjectControl::RecordCommandBuffer(VkCommandBuffer& cmd_buff)
                 vkCmdBindIndexBuffer(cmd_buff, obj->IndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
                 //#NDIUWJND
-                vkCmdBindDescriptorSets(cmd_buff, VK_PIPELINE_BIND_POINT_GRAPHICS, tech->GetPipelineLayout(), 0, 1, &g_Engine->GetRenderer()->m_DescriptorSet, 0, nullptr);  //#UNI_BUFF
+                vkCmdBindDescriptorSets(cmd_buff, VK_PIPELINE_BIND_POINT_GRAPHICS, tech->GetPipelineLayout(), 0, 1, &g_Engine->Renderer()->m_DescriptorSet, 0, nullptr);  //#UNI_BUFF
                 vkCmdDrawIndexed(cmd_buff, static_cast<uint32_t>(obj->GetIndicesCount()), 1, 0, 0, 0);
             }
             else
             {
 
                 //#NDIUWJND
-                vkCmdBindDescriptorSets(cmd_buff, VK_PIPELINE_BIND_POINT_GRAPHICS, tech->GetPipelineLayout(), 0, 1, &g_Engine->GetRenderer()->m_DescriptorSet, 0, nullptr);  //#UNI_BUFF
+                vkCmdBindDescriptorSets(cmd_buff, VK_PIPELINE_BIND_POINT_GRAPHICS, tech->GetPipelineLayout(), 0, 1, &g_Engine->Renderer()->m_DescriptorSet, 0, nullptr);  //#UNI_BUFF
                 vkCmdDraw(cmd_buff, static_cast<uint32_t>(obj->GetVerticesCount()), 1, 0, 0);
             }
         }
