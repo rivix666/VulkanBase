@@ -215,8 +215,8 @@ private:
     VkSemaphore m_ImageAvailableSemaphore = nullptr;
     VkSemaphore m_RenderFinishedSemaphore = nullptr;
 
-    // Misc
-    bool m_EnableTripleBuffering = false;
+    // Without triple buffering, application will use v-sync
+    bool m_EnableTripleBuffering = true;
 
     // Required device extensions vector. Without them application won't start
     const std::vector<const char*> m_ReqDeviceExt = { VK_KHR_SWAPCHAIN_EXTENSION_NAME }; 

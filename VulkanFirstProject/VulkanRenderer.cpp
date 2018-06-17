@@ -560,7 +560,7 @@ VkPresentModeKHR CVulkanRenderer::ChooseSwapPresentMode(const std::vector<VkPres
         {
             return availablePresentMode;
         }
-        else if (availablePresentMode == VK_PRESENT_MODE_FIFO_KHR)
+        else if (availablePresentMode == VK_PRESENT_MODE_FIFO_KHR) 
         {
             bestMode = availablePresentMode;
         }
