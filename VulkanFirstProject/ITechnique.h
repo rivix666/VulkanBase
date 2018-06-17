@@ -28,6 +28,7 @@ protected:
     virtual void GetViewportDesc(VkPipelineViewportStateCreateInfo& viewportState);
     virtual void GetRasterizerDesc(VkPipelineRasterizationStateCreateInfo& rasterizer);
     virtual void GetMultisamplingDesc(VkPipelineMultisampleStateCreateInfo& multisampling);
+    virtual void GetDepthStencilDesc(VkPipelineDepthStencilStateCreateInfo& depthStencil);
     virtual void GetColorBlendDesc(VkPipelineColorBlendStateCreateInfo& colorBlending);
     virtual void GetDynamicStateDesc(VkPipelineDynamicStateCreateInfo& dynamicState);
     virtual void GetPipelineLayoutDesc(VkPipelineLayoutCreateInfo& pipelineLayoutInfo);

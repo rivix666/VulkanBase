@@ -58,6 +58,9 @@ bool ITechnique::CreateGraphicsPipeline()
     VkPipelineMultisampleStateCreateInfo multisampling = {};
     GetMultisamplingDesc(multisampling);
 
+    VkPipelineDepthStencilStateCreateInfo depthStencil = {};
+    GetDepthStencilDesc(depthStencil);
+
     // Color blending
     VkPipelineColorBlendStateCreateInfo colorBlending = {};
     GetColorBlendDesc(colorBlending);
@@ -79,7 +82,7 @@ bool ITechnique::CreateGraphicsPipeline()
     pipelineInfo.pViewportState = &viewportState;
     pipelineInfo.pRasterizationState = &rasterizer;
     pipelineInfo.pMultisampleState = &multisampling;
-    //pipelineInfo.pDepthStencilState = nullptr; // Optional
+    pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pColorBlendState = &colorBlending;
     //pipelineInfo.pDynamicState = nullptr; // &dynamicState; // Optional
     pipelineInfo.layout = m_PipelineLayout;
@@ -129,9 +132,7 @@ void ITechnique::GetRasterizerDesc(VkPipelineRasterizationStateCreateInfo& raste
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
-
-    // #UNI_BUFF
-    rasterizer.cullMode = VK_CULL_MODE_NONE;//VK_CULL_MODE_BACK_BIT;
+    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;;
 
     rasterizer.depthBiasEnable = VK_FALSE;
@@ -149,6 +150,20 @@ void ITechnique::GetMultisamplingDesc(VkPipelineMultisampleStateCreateInfo& mult
     multisampling.pSampleMask = nullptr; // Optional
     multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
     multisampling.alphaToOneEnable = VK_FALSE; // Optional
+}
+
+void ITechnique::GetDepthStencilDesc(VkPipelineDepthStencilStateCreateInfo& depthStencil)
+{
+    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencil.depthTestEnable = VK_TRUE;
+    depthStencil.depthWriteEnable = VK_TRUE;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+    depthStencil.depthBoundsTestEnable = VK_FALSE;
+    depthStencil.minDepthBounds = 0.0f; // Optional
+    depthStencil.maxDepthBounds = 1.0f; // Optional
+    depthStencil.stencilTestEnable = VK_FALSE;
+    depthStencil.front = {}; // Optional
+    depthStencil.back = {}; // Optional
 }
 
 void ITechnique::GetColorBlendDesc(VkPipelineColorBlendStateCreateInfo& colorBlending)

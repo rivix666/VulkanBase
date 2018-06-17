@@ -101,31 +101,31 @@ void CGBaseObject::InitVectors(const EBaseObjInitType& type)
             { { -1.0f, 0.0f,  1.0f }, { 0.0f, 1.0f } }, // back left 2
             { {  1.0f, 0.0f,  1.0f }, { 1.0f, 1.0f } }, // back right 3
 
-            //RIGHT
+            // RIGHT
             { { -1.0f, 0.0f, -1.0f }, { 0.0f, 0.0f } }, // front left 4
             { {  1.0f, 0.0f, -1.0f }, { 1.0f, 0.0f } }, // front right 5
             { { -1.0f, 2.0f, -1.0f }, { 0.0f, 1.0f } }, // front  up left 6
             { {  1.0f, 2.0f, -1.0f }, { 1.0f, 1.0f } }, // front up right 7
 
-            //UP
+            // UP
             { { -1.0f, 2.0f, -1.0f }, { 0.0f, 0.0f } }, // front left 8
             { {  1.0f, 2.0f, -1.0f }, { 1.0f, 0.0f } }, // front right 9
             { { -1.0f, 2.0f,  1.0f }, { 0.0f, 1.0f } }, // back left 10
             { {  1.0f, 2.0f,  1.0f }, { 1.0f, 1.0f } }, // back right 11
 
-            //LEFT
+            // LEFT
             { { -1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } }, // front left 12
             { {  1.0f, 0.0f, 1.0f }, { 1.0f, 0.0f } }, // front right 13
             { { -1.0f, 2.0f, 1.0f }, { 0.0f, 1.0f } }, // front  up left 14
             { {  1.0f, 2.0f, 1.0f }, { 1.0f, 1.0f } }, // front up right 15
 
-            //FRONT
+            // FRONT
             { { -1.0f, 0.0f, -1.0f }, { 0.0f, 0.0f } }, // front left 16
             { { -1.0f, 0.0f,  1.0f }, { 1.0f, 0.0f } }, // front right 17
             { { -1.0f, 2.0f, -1.0f }, { 0.0f, 1.0f } }, // front  up left 18
             { { -1.0f, 2.0f,  1.0f }, { 1.0f, 1.0f } }, // front up right 19
 
-            //BACK
+            // BACK
             { { 1.0f, 0.0f, -1.0f }, { 0.0f, 0.0f } }, // front left 20
             { { 1.0f, 0.0f,  1.0f }, { 1.0f, 0.0f } }, // front right 21
             { { 1.0f, 2.0f, -1.0f }, { 0.0f, 1.0f } }, // front  up left 22
@@ -134,22 +134,22 @@ void CGBaseObject::InitVectors(const EBaseObjInitType& type)
         m_Indices = 
         { 
             // DOWN
-            0, 1, 3, 0, 2, 3,
+            3, 1, 0, 0, 2, 3,
 
             // RIGHT
-            4, 5, 7, 4, 6, 7,
+            4, 5, 7, 7, 6, 4,
 
             // UP
-            8, 9, 11, 8, 10, 11,
+            8, 9, 11, 11, 10, 8,
 
             // LEFT
-            12, 13, 15, 12, 14, 15,
+            15, 13, 12, 12, 14, 15,
 
             // FRONT
-            16, 17, 19, 16, 18, 19,
+            19, 17, 16, 16, 18, 19,
 
             // BACK
-            20, 21, 23, 20, 22, 23,
+            20, 21, 23, 23, 22, 20,
         };
         break;
     }

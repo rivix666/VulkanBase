@@ -48,6 +48,11 @@ void input::HandlePress(GLFWwindow* window, const int& key, const int& scancode,
         g_Engine->GetCamera()->SetMoveSpeed(0.5f);
         break;
     }
+    case GLFW_KEY_LEFT_CONTROL:
+    {
+        g_Engine->GetCamera()->SetMoveSpeed(0.02f);
+        break;
+    }
     }
 }
 
@@ -86,6 +91,7 @@ void input::HandleRelease(GLFWwindow* window, const int& key, const int& scancod
         break;
     }
     case GLFW_KEY_LEFT_SHIFT:
+    case GLFW_KEY_LEFT_CONTROL:
     {
         g_Engine->GetCamera()->SetMoveSpeed(0.1f);
         break;

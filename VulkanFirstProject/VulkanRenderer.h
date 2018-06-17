@@ -134,29 +134,46 @@ protected:
     // part one
     //////////////////////////////////////////////////////////////////////////
     bool CreateTextureImage();
-    bool CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-    void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+    bool CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+    void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
     void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
     // U¿ywane w buffers copy
     VkCommandBuffer BeginSingleTimeCommands();
     void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
+    uint32_t m_MipLevels;
     VkImage m_TextureImage = nullptr;
     VkDeviceMemory m_TextureImageMemory = nullptr;
     //////////////////////////////////////////////////////////////////////////
 
     bool CreateTextureImageView();
-    VkImageView CreateImageView(VkImage image, VkFormat format);
+    VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels); //#TYPEDEF_UINT zamienic wszystkie moje uinty na uint32_t
 
     VkImageView m_TextureImageView = nullptr;
     VkSampler m_TextureSampler = nullptr;
 
     bool CreateTextureSampler();
 
-
+    // #MIPMAPS
+    //////////////////////////////////////////////////////////////////////////
+    void GenerateMipmaps(VkImage image, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
     //////////////////////////////////////////////////////////////////////////
 
+
+    // #DEPTH
+    //////////////////////////////////////////////////////////////////////////
+    bool CreateDepthResources();
+
+    VkFormat FindDepthFormat();
+    VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+
+    bool HasStencilComponent(VkFormat format);
+
+    VkImage m_DepthImage = nullptr;
+    VkDeviceMemory m_DepthImageMemory = nullptr;
+    VkImageView m_DepthImageView = nullptr;
+    //////////////////////////////////////////////////////////////////////////
 
 
     // Render
