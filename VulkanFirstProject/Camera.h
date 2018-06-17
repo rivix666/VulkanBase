@@ -1,9 +1,31 @@
 #pragma once
 
+class CCamera;
+
 struct SCamUniBuffer
 {
     glm::mat4 view;
     glm::mat4 proj;
+};
+
+struct SCamMemento
+{
+    SCamMemento(CCamera* cam);
+    SCamMemento() = default;
+    ~SCamMemento() = default;
+
+    // Camera Attributes
+    glm::vec3 eye = glm::vec3(0.0f, 5.0f, 15.0f);
+    glm::vec3 view = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    // Angles
+    float yaw = -90.0f;
+    float pitch = 0.0f;;
+
+    // Cam sphere move attributes
+    float sphereCamPSI = -0.5f;
+    float sphereCamFI = 0.0f;
+    float sphereCamRadius = -10.0f;;
 };
 
 enum class ECamMoveDir
@@ -26,11 +48,11 @@ public:
 
     typedef unsigned int uint; // #TYPEDEF_UINT czemu nei bierze z stdafx??
 
-    // Projection methods
-    void SetPerspectiveProjection(float FOV, float aspectRatio, float zNear, float zFar);
-
     // View / Position
     void Update();
+
+    // Projection methods
+    void SetPerspectiveProjection(float fov, float aspectRatio, float zNear, float zFar);
 
     // Setters & Getters
     void SetEye(const glm::vec3& eye) { m_Eye = eye; }
@@ -52,6 +74,15 @@ public:
     const glm::vec3& CameraView() const { return m_View; }
     const glm::vec3& CameraUp() const { return m_Up; }
 
+    // Angles
+    float Yaw() const { return m_Yaw; }
+    float Pitch() const { return m_Pitch; }
+
+    // Sphere attributes
+    float SphereCamPSI() const { return m_SphereCamPSI; }
+    float SphereCamFI() const { return m_SphereCamFI; }
+    float SphereCamRadius() const { return m_SphereCamRadius; }
+
     // Input
     void ProcessMouseMoveInput(float xoffset, float yoffset);
 
@@ -62,6 +93,13 @@ public:
     // Sphere camera move
     void MoveCamSpherical(float psi, float fi);
     void ChangeViewSphereRadius(float r);
+
+    // Misc
+    void RestoreCamParams(const SCamMemento& memento);
+    void RestoreDefaultCamParams();
+
+    static const float DEFAULT_MOVE_SPEED;
+    static const glm::vec3 WORLD_UP;
 
 private:
     // Move
@@ -77,23 +115,22 @@ private:
     glm::mat4 m_InvProjectionMtx = glm::mat4(1.0f);
 
     // Camera Attributes
-    glm::vec3 m_Eye = glm::vec3(0.0f, 5.0f, 15.0f);
-    glm::vec3 m_View = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 m_Eye;
+    glm::vec3 m_View;
+    glm::vec3 m_Up;
     glm::vec3 m_Right;
 
     // Move
-    float m_MoveSpeed = 0.1f;
+    float m_MoveSpeed = DEFAULT_MOVE_SPEED;
 
     // Angles
-    float m_Yaw = -90.0f;
-    float m_Pitch = 0.0f;;
+    float m_Yaw;
+    float m_Pitch;
 
     // Cam sphere move attributes
-    float m_SphereCamPSI = -0.5f;
-    float m_SphereCamFI = 0.0f;
-    float m_SphereCamRadius = -10.0f;;
+    float m_SphereCamPSI;
+    float m_SphereCamFI;
+    float m_SphereCamRadius;
 
     // Misc
     bool m_UseFreeCam = true;

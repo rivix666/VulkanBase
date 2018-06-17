@@ -597,6 +597,9 @@ void CVulkanRenderer::RecreateSwapChain()
     CreateDepthResources();
     CreateFramebuffers();
     CreateCommandBuffers();
+
+    // Update projection matrices
+    g_Engine->GetCamera()->SetPerspectiveProjection(FOV, (float)m_SwapChainExtent.width / (float)m_SwapChainExtent.height, Z_NEAR, Z_FAR);
 }
 
 void CVulkanRenderer::CleanupSwapChain()

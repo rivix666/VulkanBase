@@ -215,7 +215,7 @@ private:
     VkSemaphore m_ImageAvailableSemaphore = nullptr;
     VkSemaphore m_RenderFinishedSemaphore = nullptr;
 
-    // Without triple buffering, application will use v-sync
+    // Without triple buffering, application will use #V-SYNC
     bool m_EnableTripleBuffering = true;
 
     // Required device extensions vector. Without them application won't start

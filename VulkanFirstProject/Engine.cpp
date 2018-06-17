@@ -34,12 +34,7 @@ bool CEngine::Init()
             return false;
 
         m_ObjectControl = new CGObjectControl(m_Renderer->GetDevice());
-
         m_Camera = new CCamera();
-
-        //Set up projection matrix
-        // #CAMERA to trzeba od nowa wyliczac gdys ie zmieni wielkosc okna
-        m_Camera->SetPerspectiveProjection(60.0f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 600.0f);
 
         return true;
     }
@@ -48,9 +43,18 @@ bool CEngine::Init()
 
 void CEngine::Frame()
 {
+    // Start frame timer
+    m_FrameTimer.startTimer();
+
+    // Update scene
     UpdateScene();
+
+    // Render
     m_Renderer->PresentQueueWaitIdle();
     m_Renderer->Render();
+
+    // Store elapsed time
+    m_LastFrameTime = m_FrameTimer.getElapsedTime();
 }
 
 void CEngine::UpdateScene()
@@ -58,7 +62,7 @@ void CEngine::UpdateScene()
     UpdateCamera();
 }
 
-void CEngine::InitInputsListener()
+void CEngine::InitInputsListener() //#INPUT to movnac do constructora input listenersa
 {
     // Set keyboard
     glfwSetKeyCallback(m_MainWnd, input::KeyCallback);

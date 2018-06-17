@@ -33,7 +33,7 @@
 #include "Engine.h"
 #include "Utils/Timer.h"
 
-// Defines
+// Window defines
 #define WINDOW_TITLE "Particles v1.1 - Praca Magisterska Tomasz Kud 2017"
 #define W_WINDOW_TITLE L"Particles v1.1 - Praca Magisterska Tomasz Kud 2017"
 
@@ -42,28 +42,37 @@
 #define RENDER_WIDTH WINDOW_WIDTH
 #define RENDER_HEIGHT WINDOW_HEIGHT
 
+// Projection defines
+#define FOV 60.0f
+#define ASPECT (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT
+#define Z_NEAR 0.1f
+#define Z_FAR 600.0f
+
+// Math defines
+#define PI 3.141592653589793238462643383279
+#define TWO_PI 6.283185307179586476925286766559
+#define HALF_PI 1.57079632679
+#define DEG_TO_RAD 0.01745329251994329576923690768489
+
+// Release defines
 #define DELETE(x) { delete x; x = nullptr; }
 #define SAFE_DELETE(x) { if (x) { delete x; x = nullptr; } }
-
 #define DELETE_ARR(x) { delete[] x; x = nullptr; }
 #define SAFE_DELETE_ARR(x) { if (x) { delete[] x; x = nullptr; } }
 
+// Init defines
 #define INIT_PTR_VEC(vec, size) { vec.resize(size); for (int i = 0; i < size; i++) vec[i] = nullptr; }
 
+// Misc defines
 #define VKRESULT(res) res != VK_SUCCESS
 
+// Debug defines
 #define LogD( s )                           \
 {                                           \
     std::wstringstream ws;                  \
     ws << s;                                \
     OutputDebugString(ws.str().c_str());    \
 }
-
-// Math Defines
-#define PI 3.141592653589793238462643383279
-#define TWO_PI 6.283185307179586476925286766559
-#define HALF_PI 1.57079632679
-#define DEG_TO_RAD 0.01745329251994329576923690768489
 
 typedef unsigned int uint;
 

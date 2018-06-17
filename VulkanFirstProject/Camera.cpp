@@ -1,17 +1,31 @@
 #include "stdafx.h"
 #include "Camera.h"
 
-CCamera::CCamera()
+const float CCamera::DEFAULT_MOVE_SPEED = 0.02f;
+const glm::vec3 CCamera::WORLD_UP = glm::vec3(0.0f, 1.0f, 0.0f);
+
+SCamMemento::SCamMemento(CCamera* cam)
 {
-    for (uint i = 0; i < (uint)ECamMoveDir::_COUNT_; i++)
-        m_MoveDirKeyState[i] = false;
+    eye = cam->CameraPosition();
+    view = cam->CameraView();
+    yaw = cam->Yaw();
+    pitch = cam->Pitch();
+    sphereCamPSI = cam->SphereCamPSI();
+    sphereCamFI = cam->SphereCamFI();
+    sphereCamRadius = cam->SphereCamRadius();
 }
 
-void CCamera::SetPerspectiveProjection(float FOV, float aspectRatio, float zNear, float zFar)
+CCamera::CCamera()
 {
-    FOV = FOV * (float)DEG_TO_RAD;
-    m_ProjectionMtx = glm::perspective(FOV, aspectRatio, zNear, zFar);
-    m_InvProjectionMtx = glm::inverse(m_ProjectionMtx);
+    // Init move keys states
+    for (uint i = 0; i < (uint)ECamMoveDir::_COUNT_; i++)
+        m_MoveDirKeyState[i] = false;
+
+    // Init cam params
+    RestoreDefaultCamParams();
+
+    // Set up projection matrix
+    SetPerspectiveProjection(FOV, ASPECT, Z_NEAR, Z_FAR);
 }
 
 void CCamera::Update()
@@ -24,26 +38,24 @@ void CCamera::Update()
         m_ViewMtx = glm::lookAt(m_Eye, m_View, m_Up);
 }
 
+void CCamera::SetPerspectiveProjection(float fov, float aspectRatio, float zNear, float zFar)
+{
+    fov = fov * (float)DEG_TO_RAD;
+    m_ProjectionMtx = glm::perspective(fov, aspectRatio, zNear, zFar);
+    m_InvProjectionMtx = glm::inverse(m_ProjectionMtx);
+}
+
 void CCamera::SetUseFreeCam(bool use /*= true*/)
 {
-    static glm::vec3 free_view(1.0);
-    static glm::vec3 free_eye(1.0);
+    static SCamMemento memento;
     if (use)
     {
-        m_Yaw = -90.0f;
-        m_Pitch = 0.0f;;
-        m_View = free_view;
-        m_Eye = free_eye;
+        RestoreCamParams(memento);
     }
     else
     {
-        free_eye = CameraPosition();
-        free_view = CameraView();
-        m_SphereCamPSI = -0.5f;
-        m_SphereCamFI = 0.0f;
-        m_SphereCamRadius = -10.0f;;
-        m_Eye = glm::vec3(0.0f, 5.0f, -25.0f);
-        m_View = glm::vec3(0.0f, 0.0f, 0.0f);
+        memento = SCamMemento(this);
+        RestoreDefaultCamParams();
     }
     m_UseFreeCam = use;
 }
@@ -69,30 +81,22 @@ void CCamera::MoveYawPitchFreeCam(float xoffset, float yoffset)
     m_Yaw += xoffset;
     m_Pitch += yoffset;
 
-    // Make sure that when pitch is out of bounds, screen doesn't get flipped
-  //  if (constrainPitch)
- //   {
-        if (m_Pitch > 89.0f)
-            m_Pitch = 89.0f;
-        if (m_Pitch < -89.0f)
-            m_Pitch = -89.0f;
-   // }
-
-    // Update Front, Right and Up Vectors using the updated Euler angles
-
-    // UpdateCameraVectors();
+    if (m_Pitch > 89.0f)
+        m_Pitch = 89.0f;
+    if (m_Pitch < -89.0f)
+        m_Pitch = -89.0f;
 }
 
 void CCamera::MoveCamSpherical(float psi, float fi)
 {
-    // vertical move
+    // Vertical move
     m_SphereCamPSI -= psi;
     if (m_SphereCamPSI < -1.5f)
         m_SphereCamPSI = -1.5f;
     else if (m_SphereCamPSI > -0.1f)
         m_SphereCamPSI = -0.1f;
 
-    // horizonthal move
+    // Horizonthal move
     m_SphereCamFI -= fi;
 }
 
@@ -101,6 +105,23 @@ void CCamera::ChangeViewSphereRadius(float r)
     m_SphereCamRadius += r;
     if (m_SphereCamRadius > 0)
         m_SphereCamRadius = 0;
+}
+
+void CCamera::RestoreCamParams(const SCamMemento& memento)
+{
+    m_Eye = memento.eye;
+    m_View = memento.view;
+    m_Yaw = memento.yaw;
+    m_Pitch = memento.pitch;
+    m_SphereCamPSI = memento.sphereCamPSI;
+    m_SphereCamFI = memento.sphereCamFI;
+    m_SphereCamRadius = memento.sphereCamRadius;
+}
+
+void CCamera::RestoreDefaultCamParams()
+{
+    RestoreCamParams(SCamMemento());
+    Update();
 }
 
 void CCamera::UpdateCameraVectors()
@@ -125,24 +146,25 @@ void CCamera::UpdateFreeCamVectors()
     UpdateFreeCamView();
 
     // Update right and up
-    m_Right = glm::normalize(glm::cross(m_View, m_WorldUp));
+    m_Right = glm::normalize(glm::cross(m_View, WORLD_UP));
     m_Up = glm::normalize(glm::cross(m_Right, m_View));
 }
 
 void CCamera::UpdateFreeCamPos()
 {
+    float velocity = m_MoveSpeed * g_Engine->GetLastFrameTime();
     if (m_MoveDirKeyState[(uint)ECamMoveDir::FORWARD])
-        m_Eye += m_View * m_MoveSpeed;
+        m_Eye += m_View * velocity;
     if (m_MoveDirKeyState[(uint)ECamMoveDir::BACKWARD])
-        m_Eye -= m_View * m_MoveSpeed;
+        m_Eye -= m_View * velocity;
     if (m_MoveDirKeyState[(uint)ECamMoveDir::RIGHT])
-        m_Eye += m_Right * m_MoveSpeed;
+        m_Eye += m_Right * velocity;
     if (m_MoveDirKeyState[(uint)ECamMoveDir::LEFT])
-        m_Eye -= m_Right * m_MoveSpeed;
+        m_Eye -= m_Right * velocity;
     if (m_MoveDirKeyState[(uint)ECamMoveDir::UP])
-        m_Eye += m_Up * m_MoveSpeed;
+        m_Eye += m_Up * velocity;
     if (m_MoveDirKeyState[(uint)ECamMoveDir::DOWN])
-        m_Eye -= m_Up * m_MoveSpeed;
+        m_Eye -= m_Up * velocity;
 }
 
 void CCamera::UpdateFreeCamView()
