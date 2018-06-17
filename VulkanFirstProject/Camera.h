@@ -1,5 +1,11 @@
 #pragma once
 
+struct SCamUniBuffer
+{
+    glm::mat4 view;
+    glm::mat4 proj;
+};
+
 enum class ECamMoveDir
 {
     FORWARD = 0,
@@ -30,8 +36,8 @@ public:
     void SetEye(const glm::vec3& eye) { m_Eye = eye; }
     void SetView(const glm::vec3& view) { m_View = view; }
 
-    bool UseFreeCam() const { return m_UseFreeCam; }
     float MoveSpeed() const { return m_MoveSpeed; }
+    bool UseFreeCam() const { return m_UseFreeCam; }
     void SetUseFreeCam(bool use = true);
     void SetMoveSpeed(float speed) { m_MoveSpeed = speed; }
 

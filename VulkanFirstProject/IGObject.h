@@ -1,10 +1,22 @@
 #pragma once
 #include "ITechnique.h"
 
+struct SObjMtxInitParams
+{
+    SObjMtxInitParams() = default;
+    SObjMtxInitParams(const glm::vec3& t = glm::vec3(0.0f, 0.0f, 0.0f), const glm::vec3& s = glm::vec3(1.0f, 1.0f, 1.0f))
+        : translation(t), scale(s) {}
+    ~SObjMtxInitParams() = default;
+
+    glm::vec3 translation = glm::vec3(0.0f, 0.0f, 0.0f); 
+    glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
+};
+
 class IGObject
 {
 public:
     IGObject() = default;
+    IGObject(const SObjMtxInitParams& params);
     ~IGObject();
 
     typedef unsigned int uint; // #TYPEDEF_UINT czemu nei bierze z stdafx??
@@ -21,19 +33,27 @@ public:
     virtual void*  GetIndicesPtr() = 0;
 
     void SetTechId(uint tech_id) { m_TechId = tech_id; }
-    uint GetTechniqueId() const { return m_TechId; }
+    uint TechniqueId() const { return m_TechId; }
 
-    const VkBuffer& GetIndexBuffer() const { return m_IndexBuffer; }
-    const VkBuffer& GetVertexBuffer() const { return m_VertexBuffer; }
-    const VkDeviceMemory& GetIndexBufferMem() const { return m_IndexBufferMemory; }
-    const VkDeviceMemory& GetVertexBufferMem() const { return m_VertexBufferMemory; }
+    void SetWorldMtx(const glm::mat4& mtx) { m_WorldMtx = mtx; }
+    const glm::mat4& WorldMtx() const { return m_WorldMtx; }
+
+    void Translate(const glm::vec3& pos) { m_WorldMtx = glm::translate(m_WorldMtx, pos); }
+    void Rotate(const float& angle , const glm::vec3& axes) { m_WorldMtx = glm::rotate(m_WorldMtx, angle, axes); }
+    void Scale(const glm::vec3& scale) { m_WorldMtx = glm::scale(m_WorldMtx, scale);}
+
+    const VkBuffer& IndexBuffer() const { return m_IndexBuffer; }
+    const VkBuffer& VertexBuffer() const { return m_VertexBuffer; }
+    const VkDeviceMemory& IndexBufferMem() const { return m_IndexBufferMemory; }
+    const VkDeviceMemory& VertexBufferMem() const { return m_VertexBufferMemory; }
 
     // Buffers handle
-    virtual bool   CreateBuffers();
-    virtual void   CleanupBuffers();
+    virtual bool CreateBuffers();
+    virtual void CleanupBuffers();
 
 protected:
     uint m_TechId = UINT_MAX; //#TECH zobaczymy czy w ogole potrzebne
+    glm::mat4 m_WorldMtx = glm::mat4(1.0f);
 
     // Buffers
     VkBuffer m_IndexBuffer = nullptr;

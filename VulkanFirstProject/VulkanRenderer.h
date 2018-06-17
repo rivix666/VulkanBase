@@ -3,11 +3,12 @@
 
 class CTechniqueManager;
 
+//#UNI_BUFF podzielic to na oddzielny dla cam co bedzie staly i oddzielny per object
 struct UniformBufferObject 
 {
-    glm::mat4 model;
     glm::mat4 view;
     glm::mat4 proj;
+    glm::mat4 obj_world;
 };
 
 class CVulkanRenderer
@@ -124,6 +125,36 @@ public:
     VkDescriptorSet m_DescriptorSet = nullptr;
 
 protected:
+    //////////////////////////////////////////////////////////////////////////
+
+
+    //#IMAGES
+    //////////////////////////////////////////////////////////////////////////
+
+    // part one
+    //////////////////////////////////////////////////////////////////////////
+    bool CreateTextureImage();
+    bool CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+    void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+    // U¿ywane w buffers copy
+    VkCommandBuffer BeginSingleTimeCommands();
+    void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+    VkImage m_TextureImage = nullptr;
+    VkDeviceMemory m_TextureImageMemory = nullptr;
+    //////////////////////////////////////////////////////////////////////////
+
+    bool CreateTextureImageView();
+    VkImageView CreateImageView(VkImage image, VkFormat format);
+
+    VkImageView m_TextureImageView = nullptr;
+    VkSampler m_TextureSampler = nullptr;
+
+    bool CreateTextureSampler();
+
+
     //////////////////////////////////////////////////////////////////////////
 
 

@@ -23,16 +23,23 @@ std::array<VkVertexInputAttributeDescription, 2>* BaseVertex::GetAttributeDescri
     static bool prepared = false; // #TECH_UGH... // moze szykowac je jak graphics pipeline czyli przychodza tutaj z gory
     if (!prepared)
     {
+        // Pos
         m_AttributeDesc[0].binding = 0;
-        m_AttributeDesc[0].location = 0;
-        m_AttributeDesc[0].format = VK_FORMAT_R32G32B32_SFLOAT; //#INPUT_VERTEX_WAZNE pamietaj ot ym gonwie
+        m_AttributeDesc[0].location = 0; //#INPUT_VERTEX_WAZNElokacje musza sie zgadzac z shaderem
+        m_AttributeDesc[0].format = VK_FORMAT_R32G32B32_SFLOAT; //#INPUT_VERTEX_WAZNE pamietaj o tym 
         m_AttributeDesc[0].offset = offsetof(BaseVertex, pos);
 
+        // TexCoord
         m_AttributeDesc[1].binding = 0;
         m_AttributeDesc[1].location = 1;
+        m_AttributeDesc[1].format = VK_FORMAT_R32G32_SFLOAT;
+        m_AttributeDesc[1].offset = offsetof(BaseVertex, texCoord);
 
-        m_AttributeDesc[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        m_AttributeDesc[1].offset = offsetof(BaseVertex, color);
+        // Color
+        // m_AttributeDesc[2].binding = 0;
+        // m_AttributeDesc[2].location = 2;
+        // m_AttributeDesc[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+        // m_AttributeDesc[2].offset = offsetof(BaseVertex, color);
         prepared = true;
     }
     return &m_AttributeDesc;

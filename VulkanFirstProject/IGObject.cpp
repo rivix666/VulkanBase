@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "IGObject.h"
 
+IGObject::IGObject(const SObjMtxInitParams& params)
+{
+    Translate(params.translation);
+    Scale(params.scale);
+}
+
 IGObject::~IGObject()
 {
     CleanupBuffers();

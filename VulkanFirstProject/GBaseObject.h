@@ -2,10 +2,26 @@
 #include "IGObject.h"
 #include "BaseTechnique.h"
 
+enum class EBaseObjInitType
+{
+    PLANE = 0,
+    BOX,
+
+    _COUNT_
+};
+
+struct SObjUniBuffer
+{
+    glm::mat4 obj_world;
+};
+
 class CGBaseObject : public IGObject
 {
 public:
-    CGBaseObject();
+    CGBaseObject() = default;
+    CGBaseObject(const EBaseObjInitType& type);
+    CGBaseObject(const EBaseObjInitType& type, const SObjMtxInitParams& params);
+    CGBaseObject(const std::vector<uint16_t>& indices, const std::vector<BaseVertex>& vertices, const SObjMtxInitParams& params);
     ~CGBaseObject() = default;
 
     // Derived from IGObject
@@ -24,6 +40,7 @@ public:
     static uint s_TechId; //#TECH keipskie rozwiazanie ale na razie na szybko jest
 
 protected:
+    void InitVectors(const EBaseObjInitType& type);
     void CreateVertexBuffer();
     void CreateIndexBuffer();
 

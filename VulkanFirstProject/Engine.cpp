@@ -38,7 +38,8 @@ bool CEngine::Init()
         m_Camera = new CCamera();
 
         //Set up projection matrix
-        m_Camera->SetPerspectiveProjection(60.0f, WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 600.0f);
+        // #CAMERA to trzeba od nowa wyliczac gdys ie zmieni wielkosc okna
+        m_Camera->SetPerspectiveProjection(60.0f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 600.0f);
 
         return true;
     }
@@ -66,19 +67,17 @@ void CEngine::InitInputsListener()
     glfwSetCursorPosCallback(m_MainWnd, input::CursorPositionCallback);
     glfwSetMouseButtonCallback(m_MainWnd, input::MouseButtonCallback);
     glfwSetScrollCallback(m_MainWnd, input::ScrollCallback);
-    glfwSetInputMode(m_MainWnd, GLFW_CURSOR, GLFW_CURSOR_DISABLED/*GLFW_CURSOR_HIDDEN*/);
+    glfwSetInputMode(m_MainWnd, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void CEngine::UpdateCamera()
 {
-
     m_Camera->Update();
-
 
     UniformBufferObject ubo = {};
     ubo.view = m_Camera->ViewMatrix();
     ubo.proj = m_Camera->ProjectionMatrix();
-    ubo.model = glm::mat4(1.0f);
+    ubo.obj_world = glm::mat4(1.0f);
     ubo.proj[1][1] *= -1;
 
     void* data;

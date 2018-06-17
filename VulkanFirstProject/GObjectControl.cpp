@@ -33,10 +33,10 @@ void CGObjectControl::RegisterObject(IGObject* obj)
         return;
 
     obj->CreateBuffers();
-    EnsureTechIdWillFit(obj->GetTechniqueId());
+    EnsureTechIdWillFit(obj->TechniqueId());
 
-    m_TechToObjVec[obj->GetTechniqueId()].push_back(obj);
-    m_SizeCacheVec[obj->GetTechniqueId()] += obj->GetVerticesSize();
+    m_TechToObjVec[obj->TechniqueId()].push_back(obj);
+    m_SizeCacheVec[obj->TechniqueId()] += obj->GetVerticesSize();
 }
 
 void CGObjectControl::RegisterObject(const uint& tech, IGObject* obj)
@@ -72,16 +72,16 @@ void CGObjectControl::RecordCommandBuffer(VkCommandBuffer& cmd_buff)
         //#BUFFERS zrobic to jakos madrze kiedys, pogrupowac, ponadawac offsety, by nie leciec tu w drugiej petli tylko za jednym razem machanac wsio
         for (auto obj : m_TechToObjVec[i])
         {
-            if (!obj->GetVertexBuffer())
+            if (!obj->VertexBuffer())
                 continue;
 
-            VkBuffer vertexBuffers[] = { obj->GetVertexBuffer() };
+            VkBuffer vertexBuffers[] = { obj->VertexBuffer() };
             VkDeviceSize offsets[] = { 0 };
             vkCmdBindVertexBuffers(cmd_buff, 0, 1, vertexBuffers, offsets);
 
-            if (obj->GetIndexBuffer())
+            if (obj->IndexBuffer())
             {
-                vkCmdBindIndexBuffer(cmd_buff, obj->GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
+                vkCmdBindIndexBuffer(cmd_buff, obj->IndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
                 //#NDIUWJND
                 vkCmdBindDescriptorSets(cmd_buff, VK_PIPELINE_BIND_POINT_GRAPHICS, tech->GetPipelineLayout(), 0, 1, &g_Engine->GetRenderer()->m_DescriptorSet, 0, nullptr);  //#UNI_BUFF

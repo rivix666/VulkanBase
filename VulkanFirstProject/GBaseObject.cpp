@@ -3,21 +3,25 @@
 
 uint CGBaseObject::s_TechId = UINT_MAX;
 
-CGBaseObject::CGBaseObject()
+CGBaseObject::CGBaseObject(const EBaseObjInitType& type)
 {
-    m_Vertices = 
-    {
-        { { -10000.0f, 2.5f, -10000.0f }, { 0.0f, 0.0f, 1.0f } },
-        { {  10000.0f, 2.5f, -10000.0f }, { 0.0f, 1.0f, 0.0f } },
-        { {  10000.0f, 2.5f,  10000.0f }, { 1.0f, 0.0f, 0.0f } },
-        { { -10000.0f, 2.5f,  10000.0f }, { 0.0f, 1.0f, 0.0f } },
-    };
+    m_TechId = s_TechId; //#TECH keipskie rozwiazanie ale na razie na szybko jest
+    InitVectors(type);
+}
 
-    m_Indices = {
-        0, 1, 2, 2, 3, 0
-    };
+CGBaseObject::CGBaseObject(const EBaseObjInitType& type, const SObjMtxInitParams& params)
+    : IGObject(params)
+{
+    m_TechId = s_TechId; //#TECH keipskie rozwiazanie ale na razie na szybko jest
+    InitVectors(type);
+}
 
-    m_TechId = s_TechId;
+CGBaseObject::CGBaseObject(const std::vector<uint16_t>& indices, const std::vector<BaseVertex>& vertices, const SObjMtxInitParams& params)
+    : IGObject(params)
+    , m_Indices(indices)
+    , m_Vertices(vertices)
+{
+    m_TechId = s_TechId; //#TECH keipskie rozwiazanie ale na razie na szybko jest
 }
 
 bool CGBaseObject::CreateBuffers()
@@ -71,8 +75,92 @@ void* CGBaseObject::GetIndicesPtr()
     return &m_Indices[0];
 }
 
+void CGBaseObject::InitVectors(const EBaseObjInitType& type)
+{
+    switch (type)
+    {
+    case EBaseObjInitType::PLANE:
+    {
+        m_Vertices =
+        {
+            { { -10000.0f, 0.0f, -10000.0f }, { 1.0f, 0.0f } }, // front left
+            { {  10000.0f, 0.0f, -10000.0f }, { 0.0f, 0.0f } }, // front right
+            { {  10000.0f, 0.0f,  10000.0f }, { 0.0f, 1.0f } }, // back right
+            { { -10000.0f, 0.0f,  10000.0f }, { 1.0f, 1.0f } }, // back left
+        };
+        m_Indices = { 0, 1, 2, 2, 3, 0 };
+        break;
+    }
+    case EBaseObjInitType::BOX:
+    {
+        m_Vertices =
+        {
+            // DOWN
+            { { -1.0f, 0.0f, -1.0f }, { 0.0f, 0.0f } }, // front left 0
+            { {  1.0f, 0.0f, -1.0f }, { 1.0f, 0.0f } }, // front right 1
+            { { -1.0f, 0.0f,  1.0f }, { 0.0f, 1.0f } }, // back left 2
+            { {  1.0f, 0.0f,  1.0f }, { 1.0f, 1.0f } }, // back right 3
+
+            //RIGHT
+            { { -1.0f, 0.0f, -1.0f }, { 0.0f, 0.0f } }, // front left 4
+            { {  1.0f, 0.0f, -1.0f }, { 1.0f, 0.0f } }, // front right 5
+            { { -1.0f, 2.0f, -1.0f }, { 0.0f, 1.0f } }, // front  up left 6
+            { {  1.0f, 2.0f, -1.0f }, { 1.0f, 1.0f } }, // front up right 7
+
+            //UP
+            { { -1.0f, 2.0f, -1.0f }, { 0.0f, 0.0f } }, // front left 8
+            { {  1.0f, 2.0f, -1.0f }, { 1.0f, 0.0f } }, // front right 9
+            { { -1.0f, 2.0f,  1.0f }, { 0.0f, 1.0f } }, // back left 10
+            { {  1.0f, 2.0f,  1.0f }, { 1.0f, 1.0f } }, // back right 11
+
+            //LEFT
+            { { -1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } }, // front left 12
+            { {  1.0f, 0.0f, 1.0f }, { 1.0f, 0.0f } }, // front right 13
+            { { -1.0f, 2.0f, 1.0f }, { 0.0f, 1.0f } }, // front  up left 14
+            { {  1.0f, 2.0f, 1.0f }, { 1.0f, 1.0f } }, // front up right 15
+
+            //FRONT
+            { { -1.0f, 0.0f, -1.0f }, { 0.0f, 0.0f } }, // front left 16
+            { { -1.0f, 0.0f,  1.0f }, { 1.0f, 0.0f } }, // front right 17
+            { { -1.0f, 2.0f, -1.0f }, { 0.0f, 1.0f } }, // front  up left 18
+            { { -1.0f, 2.0f,  1.0f }, { 1.0f, 1.0f } }, // front up right 19
+
+            //BACK
+            { { 1.0f, 0.0f, -1.0f }, { 0.0f, 0.0f } }, // front left 20
+            { { 1.0f, 0.0f,  1.0f }, { 1.0f, 0.0f } }, // front right 21
+            { { 1.0f, 2.0f, -1.0f }, { 0.0f, 1.0f } }, // front  up left 22
+            { { 1.0f, 2.0f,  1.0f }, { 1.0f, 1.0f } }, // front up right 23
+        };
+        m_Indices = 
+        { 
+            // DOWN
+            0, 1, 3, 0, 2, 3,
+
+            // RIGHT
+            4, 5, 7, 4, 6, 7,
+
+            // UP
+            8, 9, 11, 8, 10, 11,
+
+            // LEFT
+            12, 13, 15, 12, 14, 15,
+
+            // FRONT
+            16, 17, 19, 16, 18, 19,
+
+            // BACK
+            20, 21, 23, 20, 22, 23,
+        };
+        break;
+    }
+    }
+}
+
 void CGBaseObject::CreateVertexBuffer()
 {
+    if (m_Vertices.empty())
+        return;
+
     VkDeviceSize bufferSize = GetVerticesSize();
 
     VkBuffer stagingBuffer;
@@ -94,6 +182,9 @@ void CGBaseObject::CreateVertexBuffer()
 
 void CGBaseObject::CreateIndexBuffer()
 {
+    if (m_Indices.empty())
+        return;
+
     VkDeviceSize bufferSize = GetIndicesSize();
 
     VkBuffer stagingBuffer;
