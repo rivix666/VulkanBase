@@ -109,6 +109,9 @@ private:
     void UpdateFreeCamPos();
     void UpdateFreeCamView();
 
+    // Uniform buffer
+    void PassDataToUniBuffer();
+
     // Matrices
     glm::mat4 m_ViewMtx = glm::mat4(1.0f);
     glm::mat4 m_ProjectionMtx = glm::mat4(1.0f);

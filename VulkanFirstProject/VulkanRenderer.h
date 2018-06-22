@@ -3,14 +3,6 @@
 
 class CTechniqueManager;
 
-//#UNI_BUFF podzielic to na oddzielny dla cam co bedzie staly i oddzielny per object
-struct UniformBufferObject 
-{
-    glm::mat4 view;
-    glm::mat4 proj;
-    glm::mat4 obj_world;
-};
-
 class CVulkanRenderer
 {
 public:
@@ -26,10 +18,19 @@ public:
 
     // Getters
     VkDevice GetDevice() const { return m_Device; }
+    VkPhysicalDevice GetPhysicalDevice() const { return m_PhysicalDevice; }
     VkRenderPass GetRenderPass() const { return m_RenderPass; }
     CTechniqueManager* GetTechMgr() const { return m_TechMgr; }
-
     const VkExtent2D& GetSwapChainExtent() const { return m_SwapChainExtent; }
+
+    // Uniform buffers
+    VkBuffer CamUniBuffer() const { return m_CamUniBuffer; }
+    VkDeviceMemory CamUniBufferMemory() const { return m_CamUniBufferMemory; }
+    VkBuffer BaseObjUniBuffer() const { return m_BaseObjUniBuffer; }
+    VkDeviceMemory BaseObjUniBufferMemory() const { return m_BaseObjUniBufferMemory; }
+    VkDescriptorSet DescriptorSet() const { return m_DescriptorSet; }
+    VkDescriptorPool DescriptorPool() const { return m_DescriptorPool; }
+    VkDescriptorSetLayout DescriptorSetLayout() const { return m_DescriptorSetLayout; }
 
     // Buffers
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -38,7 +39,7 @@ public:
 
     // Misc
     void PresentQueueWaitIdle();
-    void RecreateCommandBuffer(); //#CMD_BUFF nie dziala w ogole potrzebne??
+    void RecreateCommandBuffer(); //#CMD_BUFF w ogole potrzebne??
 
 protected:
     struct SwapChainSupportDetails
@@ -77,7 +78,6 @@ protected:
     bool CreateCommandPool();
     bool CreateCommandBuffers();
     bool CreateSemaphores();
-
     bool InitTechniqueManager();
 
     // Extensions support
@@ -93,39 +93,16 @@ protected:
     VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
-    // SwapChain recreation (after resize)
-    //#CMD_BUFF
-public:
     void RecreateSwapChain();
-protected:
-
-
     void CleanupSwapChain();
     bool RecreateSwapChainIfNeeded(const VkResult& result, bool allow_suboptimal = true);
 
-    //#UNI_BUFF
-    //////////////////////////////////////////////////////////////////////////
-public:
+    // Uniform Buffers
     bool CreateDescriptorSetLayout();
-
-    VkDescriptorSetLayout m_DescriptorSetLayout = nullptr;
-
-
-    bool CreateUniformBuffer();
-
-    VkBuffer m_UniformBuffer = nullptr;
-    VkDeviceMemory m_UniformBufferMemory = nullptr;
-
+    bool CreateUniformBuffers();
     bool CreateDescriptorPool();
-
-    VkDescriptorPool m_DescriptorPool = nullptr;
-
     bool CreateDescriptorSet();
 
-    VkDescriptorSet m_DescriptorSet = nullptr;
-
-protected:
-    //////////////////////////////////////////////////////////////////////////
 
 
     //#IMAGES
@@ -207,6 +184,17 @@ private:
     std::vector<VkImageView> m_SwapChainImageViewsVec;
     std::vector<VkFramebuffer> m_SwapChainFramebuffersVec;
 
+    //#UNI_BUFF
+    public:
+    // Uniform Buffers
+    VkBuffer m_BaseObjUniBuffer = nullptr;
+    VkBuffer m_CamUniBuffer = nullptr;
+    VkDeviceMemory m_CamUniBufferMemory = nullptr;
+    VkDeviceMemory m_BaseObjUniBufferMemory = nullptr;
+    VkDescriptorSet m_DescriptorSet = nullptr;
+    VkDescriptorPool m_DescriptorPool = nullptr;
+    VkDescriptorSetLayout m_DescriptorSetLayout = nullptr;
+
     // Command buffers
     VkCommandPool m_CommandPool = nullptr;
     std::vector<VkCommandBuffer> m_CommandBuffers;
@@ -227,9 +215,6 @@ private:
 
     // Validation layers
     const std::vector<const char*> m_ValidationLayers = { "VK_LAYER_LUNARG_standard_validation" };
-
-    // Render objects
-    std::vector<IGObject*> m_Objects;
 
 #ifdef _DEBUG
     // Debug

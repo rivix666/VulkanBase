@@ -60,6 +60,11 @@
 #define DELETE_ARR(x) { delete[] x; x = nullptr; }
 #define SAFE_DELETE_ARR(x) { if (x) { delete[] x; x = nullptr; } }
 
+// Optimize defines #PRAGMA_OPTIMIZE obadac czemu nie dziala
+#define PRAGMA(X) _Pragma(#X)
+#define OPTIMIZE_DISABLE PRAGMA(optimize("", off))
+#define OPTIMIZE_ENABLE PRAGMA(optimize("", on))
+
 // Init defines
 #define INIT_PTR_VEC(vec, size) { vec.resize(size); for (int i = 0; i < size; i++) vec[i] = nullptr; }
 

@@ -60,21 +60,5 @@ void CEngine::Frame()
 
 void CEngine::UpdateScene()
 {
-    UpdateCamera();
-}
-
-void CEngine::UpdateCamera() //#CAMERA posprzatac
-{
     m_Camera->Update();
-
-    UniformBufferObject ubo = {};
-    ubo.view = m_Camera->ViewMatrix();
-    ubo.proj = m_Camera->ProjectionMatrix();
-    ubo.obj_world = glm::mat4(1.0f);
-    ubo.proj[1][1] *= -1;
-
-    void* data;
-    vkMapMemory(m_Renderer->GetDevice(), m_Renderer->m_UniformBufferMemory, 0, sizeof(ubo), 0, &data);
-    memcpy(data, &ubo, sizeof(ubo));
-    vkUnmapMemory(m_Renderer->GetDevice(), m_Renderer->m_UniformBufferMemory);
 }

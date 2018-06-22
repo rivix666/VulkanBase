@@ -13,6 +13,7 @@ enum class EBaseObjInitType
 struct SObjUniBuffer
 {
     glm::mat4 obj_world;
+    float tex_mul;
 };
 
 class CGBaseObject : public IGObject
@@ -36,6 +37,8 @@ public:
     uint     GetVerticesCount() const override;
     void*    GetVerticesPtr() override;
     void*    GetIndicesPtr() override;
+
+    void     UpdateUniformBuffer(VkDeviceMemory dev_mem) override;
 
     static uint s_TechId; //#TECH keipskie rozwiazanie ale na razie na szybko jest
 

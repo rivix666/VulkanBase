@@ -28,9 +28,6 @@ public:
     inline const CTimer& Timer() const { return m_FrameTimer; }
     inline double LastFrameTime() const { return m_LastFrameTime; }
 
-protected:
-    void UpdateCamera();
-
 private:
     // Wnd
     HWND m_Hwnd = nullptr;

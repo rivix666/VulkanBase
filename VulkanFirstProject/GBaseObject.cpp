@@ -75,6 +75,17 @@ void* CGBaseObject::GetIndicesPtr()
     return &m_Indices[0];
 }
 
+void CGBaseObject::UpdateUniformBuffer(VkDeviceMemory dev_mem)
+{
+    SObjUniBuffer ub = {};
+    ub.obj_world = m_WorldMtx;
+
+    void* data;
+    vkMapMemory(g_Engine->Device(), g_Engine->Renderer()->BaseObjUniBufferMemory(), 0, sizeof(ub), 0, &data);
+    memcpy(data, &ub, sizeof(ub));
+    vkUnmapMemory(g_Engine->Device(), g_Engine->Renderer()->BaseObjUniBufferMemory());
+}
+
 void CGBaseObject::InitVectors(const EBaseObjInitType& type)
 {
     switch (type)
@@ -89,6 +100,7 @@ void CGBaseObject::InitVectors(const EBaseObjInitType& type)
             { { -10000.0f, 0.0f,  10000.0f }, { 1.0f, 1.0f } }, // back left
         };
         m_Indices = { 0, 1, 2, 2, 3, 0 };
+        m_TexMultiplier = 5000.0f; //#UNI_BUFF
         break;
     }
     case EBaseObjInitType::BOX:
@@ -151,6 +163,7 @@ void CGBaseObject::InitVectors(const EBaseObjInitType& type)
             // BACK
             20, 21, 23, 23, 22, 20,
         };
+        m_TexMultiplier = 1.0f; //#UNI_BUFF
         break;
     }
     }

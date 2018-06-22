@@ -5,6 +5,8 @@
 #include "BaseTechnique.h"
 #include "TechniqueManager.h"
 
+#pragma optimize("", off)
+
 //#IMAGES
 #define STB_IMAGE_IMPLEMENTATION
 #include <misc/stb_image.h>
@@ -82,7 +84,7 @@ bool CVulkanRenderer::Init()
 
 
         // #UNI_BUFF
-        if (!CreateUniformBuffer())
+        if (!CreateUniformBuffers())
             return Shutdown();
 
         if (!CreateDescriptorPool())
@@ -127,11 +129,11 @@ bool CVulkanRenderer::Shutdown()
     if (m_DescriptorSetLayout)
         vkDestroyDescriptorSetLayout(m_Device, m_DescriptorSetLayout, nullptr);
 
-    if (m_UniformBuffer)
-        vkDestroyBuffer(m_Device, m_UniformBuffer, nullptr);
+    if (m_CamUniBuffer)
+        vkDestroyBuffer(m_Device, m_CamUniBuffer, nullptr);
 
-    if (m_UniformBufferMemory)
-        vkFreeMemory(m_Device, m_UniformBufferMemory, nullptr);
+    if (m_CamUniBufferMemory)
+        vkFreeMemory(m_Device, m_CamUniBufferMemory, nullptr);
 
     if (m_DescriptorPool)
         vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
@@ -267,7 +269,7 @@ void CVulkanRenderer::PresentQueueWaitIdle()
     vkQueueWaitIdle(m_PresentQueue);
 }
 
-//#CMD_BUFF
+//#CMD_BUFF vkResetCommandBuffer.
 void CVulkanRenderer::RecreateCommandBuffer()
 {
     vkFreeCommandBuffers(m_Device, m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
@@ -649,21 +651,28 @@ bool CVulkanRenderer::RecreateSwapChainIfNeeded(const VkResult& result, bool all
 
 bool CVulkanRenderer::CreateDescriptorSetLayout()
 {
-    VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-    uboLayoutBinding.binding = 0;
-    uboLayoutBinding.descriptorCount = 1;
-    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uboLayoutBinding.pImmutableSamplers = nullptr;
-    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    VkDescriptorSetLayoutBinding uboLayoutBindingCam = {};
+    uboLayoutBindingCam.binding = 0;
+    uboLayoutBindingCam.descriptorCount = 1;
+    uboLayoutBindingCam.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLayoutBindingCam.pImmutableSamplers = nullptr;
+    uboLayoutBindingCam.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    VkDescriptorSetLayoutBinding uboLayoutBindingObj = {};
+    uboLayoutBindingObj.binding = 1;
+    uboLayoutBindingObj.descriptorCount = 1;
+    uboLayoutBindingObj.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC; //VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLayoutBindingObj.pImmutableSamplers = nullptr;
+    uboLayoutBindingObj.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
     VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
-    samplerLayoutBinding.binding = 1;
+    samplerLayoutBinding.binding = 2;
     samplerLayoutBinding.descriptorCount = 1;
     samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     samplerLayoutBinding.pImmutableSamplers = nullptr;
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+    std::array<VkDescriptorSetLayoutBinding, 3> bindings = { uboLayoutBindingCam, uboLayoutBindingObj, samplerLayoutBinding };
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -675,19 +684,25 @@ bool CVulkanRenderer::CreateDescriptorSetLayout()
     return true;
 }
 
-bool CVulkanRenderer::CreateUniformBuffer()
+bool CVulkanRenderer::CreateUniformBuffers()
 {
-    VkDeviceSize bufferSize = sizeof(SObjUniBuffer) + sizeof(SCamUniBuffer);
-    return CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffer, m_UniformBufferMemory);
+    bool result = true;
+    VkDeviceSize camBufferSize = sizeof(SCamUniBuffer);
+    result = result && CreateBuffer(camBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_CamUniBuffer, m_CamUniBufferMemory);
+    VkDeviceSize baseObjBufferSize = 256 * 2; //minUniformBufferOffsetAligement;//sizeof(SObjUniBuffer); //#UNI_BUFF
+    result = result && CreateBuffer(baseObjBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_BaseObjUniBuffer, m_BaseObjUniBufferMemory);
+    return result;
 }
 
 bool CVulkanRenderer::CreateDescriptorPool()
 {
-    std::array<VkDescriptorPoolSize, 2> poolSizes = {};
+    std::array<VkDescriptorPoolSize, 3> poolSizes = {};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = 1;
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;//VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[1].descriptorCount = 1;
+    poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[2].descriptorCount = 1;
 
     VkDescriptorPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -714,33 +729,63 @@ bool CVulkanRenderer::CreateDescriptorSet()
         return utils::FatalError(g_Engine->Hwnd(), "Failed to allocate descriptor set");
 
 
-    VkDescriptorBufferInfo bufferInfo = {};
-    bufferInfo.buffer = m_UniformBuffer;
-    bufferInfo.offset = 0;
-    bufferInfo.range = sizeof(UniformBufferObject);
+    VkPhysicalDeviceProperties props;
+    vkGetPhysicalDeviceProperties(g_Engine->Renderer()->GetPhysicalDevice(), &props);
+
+    size_t minUboAlignment = props.limits.minUniformBufferOffsetAlignment;
+
+    uint32_t offsets2[2];
+    offsets2[0] = 0;
+    offsets2[1] = sizeof(SCamUniBuffer);
+
+    if (minUboAlignment > 0)
+    {
+        offsets2[0] = (offsets2[0] + minUboAlignment - 1) & ~(minUboAlignment - 1);
+        offsets2[1] = (offsets2[1] + minUboAlignment - 1) & ~(minUboAlignment - 1);
+    }
+
+
+    VkDescriptorBufferInfo camBufferInfo = {};
+    camBufferInfo.buffer = m_CamUniBuffer;
+    camBufferInfo.offset = 0;// offsets2[0];
+    camBufferInfo.range = sizeof(SCamUniBuffer);
+
+
+    VkDescriptorBufferInfo objBufferInfo = {};
+    objBufferInfo.buffer = m_BaseObjUniBuffer;
+    objBufferInfo.offset = 0;// offsets2[1]; //#NEW_UNI_BUFF hmm
+    objBufferInfo.range = sizeof(SObjUniBuffer);
 
     VkDescriptorImageInfo imageInfo = {};
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     imageInfo.imageView = m_TextureImageView;
     imageInfo.sampler = m_TextureSampler;
 
-    std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
+    std::array<VkWriteDescriptorSet, 3> descriptorWrites = {};
 
     descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptorWrites[0].dstSet = m_DescriptorSet;
-    descriptorWrites[0].dstBinding = 0;
+    descriptorWrites[0].dstBinding = 0; //#UNI_BUFF bindings
     descriptorWrites[0].dstArrayElement = 0;
     descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptorWrites[0].descriptorCount = 1;
-    descriptorWrites[0].pBufferInfo = &bufferInfo;
+    descriptorWrites[0].pBufferInfo = &camBufferInfo;
 
     descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptorWrites[1].dstSet = m_DescriptorSet;
     descriptorWrites[1].dstBinding = 1;
     descriptorWrites[1].dstArrayElement = 0;
-    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;// VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptorWrites[1].descriptorCount = 1;
-    descriptorWrites[1].pImageInfo = &imageInfo;
+    descriptorWrites[1].pBufferInfo = &objBufferInfo;
+
+    descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[2].dstSet = m_DescriptorSet;
+    descriptorWrites[2].dstBinding = 2;
+    descriptorWrites[2].dstArrayElement = 0;
+    descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptorWrites[2].descriptorCount = 1;
+    descriptorWrites[2].pImageInfo = &imageInfo;
 
     vkUpdateDescriptorSets(m_Device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     return true;

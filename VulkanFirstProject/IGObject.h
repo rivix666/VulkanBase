@@ -32,6 +32,8 @@ public:
     virtual void*  GetVerticesPtr() = 0;
     virtual void*  GetIndicesPtr() = 0;
 
+    virtual void   UpdateUniformBuffer(VkDeviceMemory /*dev_mem*/) { }
+
     void SetTechId(uint tech_id) { m_TechId = tech_id; }
     uint TechniqueId() const { return m_TechId; }
 
@@ -47,9 +49,12 @@ public:
     const VkDeviceMemory& IndexBufferMem() const { return m_IndexBufferMemory; }
     const VkDeviceMemory& VertexBufferMem() const { return m_VertexBufferMemory; }
 
+
     // Buffers handle
     virtual bool CreateBuffers();
     virtual void CleanupBuffers();
+
+    float m_TexMultiplier = 1.0f; //#UNI_BUFF temporary
 
 protected:
     uint m_TechId = UINT_MAX; //#TECH zobaczymy czy w ogole potrzebne

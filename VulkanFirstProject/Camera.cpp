@@ -36,6 +36,8 @@ void CCamera::Update()
         m_ViewMtx = glm::lookAt(m_Eye, m_Eye + m_View, m_Up);
     else
         m_ViewMtx = glm::lookAt(m_Eye, m_View, m_Up);
+
+    PassDataToUniBuffer();
 }
 
 void CCamera::SetPerspectiveProjection(float fov, float aspectRatio, float zNear, float zFar)
@@ -174,4 +176,17 @@ void CCamera::UpdateFreeCamView()
     front.y = sin(glm::radians(m_Pitch));
     front.z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
     m_View = glm::normalize(front);
+}
+
+void CCamera::PassDataToUniBuffer()
+{
+    SCamUniBuffer ub = {};
+    ub.view = ViewMatrix();
+    ub.proj = ProjectionMatrix();
+    ub.proj[1][1] *= -1;
+
+    void* data;
+    vkMapMemory(g_Engine->Device(), g_Engine->Renderer()->CamUniBufferMemory(), 0, sizeof(ub), 0, &data);
+    memcpy(data, &ub, sizeof(ub));
+    vkUnmapMemory(g_Engine->Device(), g_Engine->Renderer()->CamUniBufferMemory());
 }
