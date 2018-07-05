@@ -24,6 +24,11 @@ public:
 
     void RecordCommandBuffer(VkCommandBuffer& cmd_buff);
 
+    void UpdateUniBuffers();
+
+    void TestUpdateUniBuff(uint32_t offsets2[]);
+
+
 private:
     void EnsureTechIdWillFit(const uint& tech_id);
 

@@ -15,8 +15,16 @@ public:
     bool CreateGraphicsPipeline();
 
     // Getters
-    VkPipeline GetPipeline() const              { return m_GraphicsPipeline; }
+    VkPipeline GetPipeline() const { return m_GraphicsPipeline; }
     VkPipelineLayout GetPipelineLayout() const  { return m_PipelineLayout; }
+
+    // UniBuff getters
+    virtual size_t GetSingleUniBuffObjSize() const { return 0; }
+    virtual VkBuffer BaseObjUniBuffer() const { return nullptr; }
+    virtual VkDeviceMemory BaseObjUniBufferMemory() const { return nullptr; }
+
+    // Buffers handle
+    virtual bool CreateUniBuffers() { return false; }
 
 protected:
     // Pure virtual

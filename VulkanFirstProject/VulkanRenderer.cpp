@@ -687,10 +687,21 @@ bool CVulkanRenderer::CreateDescriptorSetLayout()
 bool CVulkanRenderer::CreateUniformBuffers()
 {
     bool result = true;
+
+    // Create cam uni buff
     VkDeviceSize camBufferSize = sizeof(SCamUniBuffer);
     result = result && CreateBuffer(camBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_CamUniBuffer, m_CamUniBufferMemory);
-    VkDeviceSize baseObjBufferSize = 256 * 2; //minUniformBufferOffsetAligement;//sizeof(SObjUniBuffer); //#UNI_BUFF
-    result = result && CreateBuffer(baseObjBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_BaseObjUniBuffer, m_BaseObjUniBufferMemory);
+
+    // Create techs uni buffs
+    for (int i = 0; i < m_TechMgr->TechniquesCount(); i++)
+    {
+        auto tech = m_TechMgr->GetTechnique(i);
+        if (!tech || tech->GetSingleUniBuffObjSize() == 0)
+            continue;
+
+        result = result && tech->CreateUniBuffers();
+    }
+
     return result;
 }
 
@@ -716,7 +727,8 @@ bool CVulkanRenderer::CreateDescriptorPool()
     return true;
 }
 
-bool CVulkanRenderer::CreateDescriptorSet()
+bool CVulkanRenderer::CreateDescriptorSet() //tomek kaczo-dupka
+
 {
     VkDescriptorSetLayout layouts[] = { m_DescriptorSetLayout };
     VkDescriptorSetAllocateInfo allocInfo = {};
@@ -729,6 +741,8 @@ bool CVulkanRenderer::CreateDescriptorSet()
         return utils::FatalError(g_Engine->Hwnd(), "Failed to allocate descriptor set");
 
 
+
+    // #UNI_BUFF Nie potrzeba
     VkPhysicalDeviceProperties props;
     vkGetPhysicalDeviceProperties(g_Engine->Renderer()->GetPhysicalDevice(), &props);
 
@@ -738,31 +752,46 @@ bool CVulkanRenderer::CreateDescriptorSet()
     offsets2[0] = 0;
     offsets2[1] = sizeof(SCamUniBuffer);
 
-    if (minUboAlignment > 0)
+    if (minUboAlignment > 0) //kurza stopka
     {
         offsets2[0] = (offsets2[0] + minUboAlignment - 1) & ~(minUboAlignment - 1);
         offsets2[1] = (offsets2[1] + minUboAlignment - 1) & ~(minUboAlignment - 1);
     }
 
+    // Cam UniBuff desc
+    VkDescriptorBufferInfo camBufferInfo = {};  
+    //kaczko-kwarczenie
 
-    VkDescriptorBufferInfo camBufferInfo = {};
     camBufferInfo.buffer = m_CamUniBuffer;
     camBufferInfo.offset = 0;// offsets2[0];
     camBufferInfo.range = sizeof(SCamUniBuffer);
 
-
-    VkDescriptorBufferInfo objBufferInfo = {};
-    objBufferInfo.buffer = m_BaseObjUniBuffer;
-    objBufferInfo.offset = 0;// offsets2[1]; //#NEW_UNI_BUFF hmm
-    objBufferInfo.range = sizeof(SObjUniBuffer);
-
+    // Image buff desc
     VkDescriptorImageInfo imageInfo = {};
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     imageInfo.imageView = m_TextureImageView;
     imageInfo.sampler = m_TextureSampler;
 
-    std::array<VkWriteDescriptorSet, 3> descriptorWrites = {};
+    // Techs buff desc
+    std::vector<VkDescriptorBufferInfo> techBuffInfoVec;
+    techBuffInfoVec.reserve(m_TechMgr->TechniquesCount());
+    for (int i = 0; i < m_TechMgr->TechniquesCount(); i++)
+    {
+        auto tech = m_TechMgr->GetTechnique(i);
+        if (!tech || tech->GetSingleUniBuffObjSize() == 0)
+            continue;
 
+        VkDescriptorBufferInfo objBufferInfo = {};
+        objBufferInfo.buffer = tech->BaseObjUniBuffer();
+        objBufferInfo.offset = 0;
+        objBufferInfo.range = tech->GetSingleUniBuffObjSize();
+        techBuffInfoVec.push_back(objBufferInfo);
+    }
+
+    //#UNI_BUFF czy zadziala?
+    //std::array<VkWriteDescriptorSet, size> descriptorWrites = {};
+    std::vector<VkWriteDescriptorSet> descriptorWrites;
+    descriptorWrites.resize(2 + techBuffInfoVec.size());
     descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptorWrites[0].dstSet = m_DescriptorSet;
     descriptorWrites[0].dstBinding = 0; //#UNI_BUFF bindings
@@ -773,19 +802,22 @@ bool CVulkanRenderer::CreateDescriptorSet()
 
     descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptorWrites[1].dstSet = m_DescriptorSet;
-    descriptorWrites[1].dstBinding = 1;
+    descriptorWrites[1].dstBinding = 2;
     descriptorWrites[1].dstArrayElement = 0;
-    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;// VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     descriptorWrites[1].descriptorCount = 1;
-    descriptorWrites[1].pBufferInfo = &objBufferInfo;
+    descriptorWrites[1].pImageInfo = &imageInfo;
 
-    descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrites[2].dstSet = m_DescriptorSet;
-    descriptorWrites[2].dstBinding = 2;
-    descriptorWrites[2].dstArrayElement = 0;
-    descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    descriptorWrites[2].descriptorCount = 1;
-    descriptorWrites[2].pImageInfo = &imageInfo;
+    for (int i = 0; i < techBuffInfoVec.size(); i++)
+    {
+        descriptorWrites[i + 2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[i + 2].dstSet = m_DescriptorSet;
+        descriptorWrites[i + 2].dstBinding = 1;
+        descriptorWrites[i + 2].dstArrayElement = 0;
+        descriptorWrites[i + 2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;// VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[i + 2].descriptorCount = 1;
+        descriptorWrites[i + 2].pBufferInfo = &techBuffInfoVec[i];
+    }
 
     vkUpdateDescriptorSets(m_Device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     return true;
@@ -1197,6 +1229,14 @@ bool CVulkanRenderer::SubmitDrawCommands(const uint32_t& imageIndex, VkSubmitInf
     return true;
 }
 
+void CVulkanRenderer::FetchDeviceProperties()
+{
+    VkPhysicalDeviceProperties props;
+    vkGetPhysicalDeviceProperties(g_Engine->Renderer()->GetPhysicalDevice(), &props);
+
+    m_MinUniformBufferOffsetAlignment = props.limits.minUniformBufferOffsetAlignment;
+}
+
 // bool CVulkanRenderer::CreatePipelineCache()
 // {
 //     VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
@@ -1401,6 +1441,8 @@ bool CVulkanRenderer::PickPhysicalDevice()
 
     if (m_PhysicalDevice == VK_NULL_HANDLE)
         return utils::FatalError(g_Engine->Hwnd(), "Failed to find a suitable GPU");
+
+    FetchDeviceProperties();
 
     return true;
 }

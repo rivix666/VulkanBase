@@ -42,6 +42,9 @@
 #define RENDER_WIDTH WINDOW_WIDTH
 #define RENDER_HEIGHT WINDOW_HEIGHT
 
+// Renderer defines
+#define OBJ_PER_TECHNIQUE 5
+
 // Projection defines
 #define FOV 60.0f
 #define ASPECT (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT

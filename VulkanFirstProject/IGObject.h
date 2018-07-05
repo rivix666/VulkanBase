@@ -49,7 +49,6 @@ public:
     const VkDeviceMemory& IndexBufferMem() const { return m_IndexBufferMemory; }
     const VkDeviceMemory& VertexBufferMem() const { return m_VertexBufferMemory; }
 
-
     // Buffers handle
     virtual bool CreateBuffers();
     virtual void CleanupBuffers();

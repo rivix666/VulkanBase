@@ -10,11 +10,6 @@ enum class EBaseObjInitType
     _COUNT_
 };
 
-struct SObjUniBuffer
-{
-    glm::mat4 obj_world;
-    float tex_mul;
-};
 
 class CGBaseObject : public IGObject
 {

@@ -34,6 +34,12 @@ void CGObjectControl::RegisterObject(IGObject* obj)
     if (!obj)
         return;
 
+    if (m_TechToObjVec[obj->TechniqueId()].size() >= OBJ_PER_TECHNIQUE)
+    {
+        utils::FatalError(g_Engine->Hwnd(), "Can not register more objects");
+        return;
+    }
+
     obj->CreateBuffers();
     EnsureTechIdWillFit(obj->TechniqueId());
 
@@ -45,6 +51,12 @@ void CGObjectControl::RegisterObject(const uint& tech, IGObject* obj)
 {
     if (!obj)
         return;
+
+    if (m_TechToObjVec[tech].size() >= OBJ_PER_TECHNIQUE)
+    {
+        utils::FatalError(g_Engine->Hwnd(), "Can not register more objects");
+        return;
+    }
 
     obj->CreateBuffers();
     EnsureTechIdWillFit(tech);
@@ -64,14 +76,7 @@ void CGObjectControl::UnregisterObject(const uint& tech, IGObject* obj)
 
 void CGObjectControl::RecordCommandBuffer(VkCommandBuffer& cmd_buff)
 {
-    //size_t minUboAlignment = g_Engine->Device()->properties.limits.minUniformBufferOffsetAlignment;
-
-    // Calculate required alignment based on minimum device offset alignment
-    //             dynamicAlignment = sizeof(glm::mat4);
-    //             if (minUboAlignment > 0) {
-    //                 dynamicAlignment = (dynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
-    //             }
-
+    //////////////////////////////////////////////////////////////////////////
     VkPhysicalDeviceProperties props;
     vkGetPhysicalDeviceProperties(g_Engine->Renderer()->GetPhysicalDevice(), &props);
 
@@ -81,33 +86,9 @@ void CGObjectControl::RecordCommandBuffer(VkCommandBuffer& cmd_buff)
     uint32_t offsets2[2];
     offsets2[0] = 0;
     offsets2[1] = sizeof(SObjUniBuffer);
-
-    if (minUboAlignment > 0)
-    {
-        offsets2[0] = (offsets2[0] + minUboAlignment - 1) & ~(minUboAlignment - 1);
-        offsets2[1] = (offsets2[1] + minUboAlignment - 1) & ~(minUboAlignment - 1);
-    }
-
-    // Update Uni buffer
-    //obj->UpdateUniformBuffer(g_Engine->Renderer()->BaseObjUniBufferMemory());
-
-    SObjUniBuffer ub = {};
-    ub.obj_world = m_TechToObjVec.front()[0]->WorldMtx();
-    ub.tex_mul = m_TechToObjVec.front()[0]->m_TexMultiplier;
-
-    SObjUniBuffer ub2 = {};
-    ub2.obj_world = m_TechToObjVec.front()[1]->WorldMtx();
-    ub2.tex_mul = m_TechToObjVec.front()[1]->m_TexMultiplier;
-
-    uint8_t *pData;
-    vkMapMemory(g_Engine->Device(), g_Engine->Renderer()->BaseObjUniBufferMemory(), 0, sizeof(SObjUniBuffer) * 2, 0, (void **)&pData);
-    memcpy(pData, &ub, sizeof(ub));
-    pData += (sizeof(SObjUniBuffer) + minUboAlignment - 1) & ~(minUboAlignment - 1);//sizeof(ub); //#UNI_BUFF
-    memcpy(pData, &ub2, sizeof(ub2));
-    vkUnmapMemory(g_Engine->Device(), g_Engine->Renderer()->BaseObjUniBufferMemory());
+    TestUpdateUniBuff(offsets2);
     //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
+
 
     auto tech_mgr = g_Engine->Renderer()->GetTechMgr();
     uint tech_count = m_TechToObjVec.size();
@@ -151,6 +132,48 @@ void CGObjectControl::RecordCommandBuffer(VkCommandBuffer& cmd_buff)
             }
         }
     }
+}
+
+//#UNI_BUFF
+/*
+Ponizsza metode uzupelnic tym co jeszcze nizej, wyliczac vector offsetow od razu per technika i rejestracja obiektow, posprzatac wsio
+Good Luck
+*/
+void CGObjectControl::UpdateUniBuffers()
+{
+
+}
+
+void CGObjectControl::TestUpdateUniBuff(uint32_t offsets2[])
+{
+    size_t minUboAlignment = 
+
+    if (minUboAlignment > 0)
+    {
+        offsets2[0] = (offsets2[0] + minUboAlignment - 1) & ~(minUboAlignment - 1);
+        offsets2[1] = (offsets2[1] + minUboAlignment - 1) & ~(minUboAlignment - 1);
+    }
+
+    // Update Uni buffer
+    //obj->UpdateUniformBuffer(g_Engine->Renderer()->BaseObjUniBufferMemory());
+
+    SObjUniBuffer ub = {};
+    ub.obj_world = m_TechToObjVec.front()[0]->WorldMtx();
+    ub.tex_mul = m_TechToObjVec.front()[0]->m_TexMultiplier;
+
+    SObjUniBuffer ub2 = {};
+    ub2.obj_world = m_TechToObjVec.front()[1]->WorldMtx();
+    ub2.tex_mul = m_TechToObjVec.front()[1]->m_TexMultiplier;
+
+    uint8_t *pData;
+    vkMapMemory(g_Engine->Device(), g_Engine->Renderer()->BaseObjUniBufferMemory(), 0, sizeof(SObjUniBuffer) * 2, 0, (void **)&pData);
+    memcpy(pData, &ub, sizeof(ub));
+    pData += (sizeof(SObjUniBuffer) + minUboAlignment - 1) & ~(minUboAlignment - 1);//sizeof(ub); //#UNI_BUFF
+    memcpy(pData, &ub2, sizeof(ub2));
+    vkUnmapMemory(g_Engine->Device(), g_Engine->Renderer()->BaseObjUniBufferMemory());
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 }
 
 void CGObjectControl::EnsureTechIdWillFit(const uint& tech_id)

@@ -1,6 +1,19 @@
 #include "stdafx.h"
 #include "InputsListener.h"
 
+
+//#UNI_BUFF
+//////////////////////////////////////////////////////////////////////////
+#include "GObjectControl.h"
+#include "TechniqueManager.h"
+#include "IGObject.h"
+
+#include "GBaseObject.h" //#UNI_BUFF
+//////////////////////////////////////////////////////////////////////////
+
+
+
+
 void input::InitInputListeners(GLFWwindow* window)
 {
     // Set keyboard
@@ -65,6 +78,23 @@ void input::HandlePress(GLFWwindow* window, const int& key, const int& scancode,
         g_Engine->Camera()->SetMoveSpeed(0.005f);
         break;
     }
+    // #UNI_BUFF
+    //////////////////////////////////////////////////////////////////////////
+    case GLFW_KEY_LEFT:
+    {
+        glm::vec3 cur_pos(0.0f);
+        cur_pos.x -= 0.1f;
+        g_Engine->ObjectControl()->m_TechToObjVec.front()[1]->Translate(cur_pos);
+        break;
+    }
+    case GLFW_KEY_RIGHT:
+    {
+        glm::vec3 cur_pos(0.0f);
+        cur_pos.x += 0.1f;
+        g_Engine->ObjectControl()->m_TechToObjVec.front()[1]->Translate(cur_pos);
+        break;
+    }
+    //////////////////////////////////////////////////////////////////////////
     }
 }
 

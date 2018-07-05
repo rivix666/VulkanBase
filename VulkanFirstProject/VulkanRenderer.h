@@ -26,8 +26,6 @@ public:
     // Uniform buffers
     VkBuffer CamUniBuffer() const { return m_CamUniBuffer; }
     VkDeviceMemory CamUniBufferMemory() const { return m_CamUniBufferMemory; }
-    VkBuffer BaseObjUniBuffer() const { return m_BaseObjUniBuffer; }
-    VkDeviceMemory BaseObjUniBufferMemory() const { return m_BaseObjUniBufferMemory; }
     VkDescriptorSet DescriptorSet() const { return m_DescriptorSet; }
     VkDescriptorPool DescriptorPool() const { return m_DescriptorPool; }
     VkDescriptorSetLayout DescriptorSetLayout() const { return m_DescriptorSetLayout; }
@@ -36,6 +34,9 @@ public:
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void CopyBuffer(VkBuffer& srcBuffer, VkBuffer& dstBuffer, VkDeviceSize size);
+
+    // Device properties
+    const size_t& MinUboAlignment() const { return m_MinUniformBufferOffsetAlignment; }
 
     // Misc
     void PresentQueueWaitIdle();
@@ -156,6 +157,9 @@ protected:
     // Render
     bool SubmitDrawCommands(const uint32_t& imageIndex, VkSubmitInfo& submitInfo);
 
+    // Misc
+    void FetchDeviceProperties();
+
     // Pipeline cache
     // bool CreatePipelineCache();
 
@@ -187,10 +191,8 @@ private:
     //#UNI_BUFF
     public:
     // Uniform Buffers
-    VkBuffer m_BaseObjUniBuffer = nullptr;
     VkBuffer m_CamUniBuffer = nullptr;
     VkDeviceMemory m_CamUniBufferMemory = nullptr;
-    VkDeviceMemory m_BaseObjUniBufferMemory = nullptr;
     VkDescriptorSet m_DescriptorSet = nullptr;
     VkDescriptorPool m_DescriptorPool = nullptr;
     VkDescriptorSetLayout m_DescriptorSetLayout = nullptr;
@@ -215,6 +217,9 @@ private:
 
     // Validation layers
     const std::vector<const char*> m_ValidationLayers = { "VK_LAYER_LUNARG_standard_validation" };
+
+    // Device properties
+    size_t m_MinUniformBufferOffsetAlignment = 0;
 
 #ifdef _DEBUG
     // Debug

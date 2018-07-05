@@ -74,6 +74,18 @@ int _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, in
         glfwPollEvents();
 
         g_Engine->Frame();
+
+        //#UNI_BUFF
+        //////////////////////////////////////////////////////////////////////////
+
+        uint32_t offsets2[2];
+        offsets2[0] = 0;
+        offsets2[1] = sizeof(SObjUniBuffer);
+        g_Engine->ObjectControl()->TestUpdateUniBuff(offsets2);
+
+        //////////////////////////////////////////////////////////////////////////
+
+
         utils::UpdateWindowBar(hwnd);
     }
 

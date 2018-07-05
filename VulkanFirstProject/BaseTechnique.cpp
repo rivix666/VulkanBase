@@ -55,6 +55,14 @@ CBaseTechnique::~CBaseTechnique()
 {
 }
 
+bool CBaseTechnique::CreateUniBuffers()
+{
+    size_t minUboAlignment = g_Engine->Renderer()->MinUboAlignment();
+    double size = ceil((double)GetSingleUniBuffObjSize() / (double)minUboAlignment);
+    VkDeviceSize baseObjBufferSize = minUboAlignment * size * OBJ_PER_TECHNIQUE;
+    return g_Engine->Renderer()->CreateBuffer(baseObjBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_BaseObjUniBuffer, m_BaseObjUniBufferMemory);
+}
+
 void CBaseTechnique::GetVertexInputDesc(VkPipelineVertexInputStateCreateInfo& vertexInputInfo)
 {
     auto bindingDescription = BaseVertex::GetBindingDescription();
