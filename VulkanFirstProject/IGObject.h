@@ -32,7 +32,7 @@ public:
     virtual void*  GetVerticesPtr() = 0;
     virtual void*  GetIndicesPtr() = 0;
 
-    virtual void   UpdateUniformBuffer(VkDeviceMemory /*dev_mem*/) { }
+    virtual void*  GetUniBuffData() { return nullptr; };
 
     void SetTechId(uint tech_id) { m_TechId = tech_id; }
     uint TechniqueId() const { return m_TechId; }

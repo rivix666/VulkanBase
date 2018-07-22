@@ -61,4 +61,5 @@ void CEngine::Frame()
 void CEngine::UpdateScene()
 {
     m_Camera->Update();
+    m_ObjectControl->UpdateUniBuffers();
 }

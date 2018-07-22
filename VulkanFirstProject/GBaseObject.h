@@ -10,7 +10,6 @@ enum class EBaseObjInitType
     _COUNT_
 };
 
-
 class CGBaseObject : public IGObject
 {
 public:
@@ -33,7 +32,7 @@ public:
     void*    GetVerticesPtr() override;
     void*    GetIndicesPtr() override;
 
-    void     UpdateUniformBuffer(VkDeviceMemory dev_mem) override;
+    void*    GetUniBuffData() override;
 
     static uint s_TechId; //#TECH keipskie rozwiazanie ale na razie na szybko jest
 
@@ -43,6 +42,8 @@ protected:
     void CreateIndexBuffer();
 
 private:
+    SObjUniBuffer m_UniBuffData;
+
     std::vector<uint16_t> m_Indices;
     std::vector<BaseVertex> m_Vertices;
 };

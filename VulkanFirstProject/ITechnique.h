@@ -19,6 +19,7 @@ public:
     VkPipelineLayout GetPipelineLayout() const  { return m_PipelineLayout; }
 
     // UniBuff getters
+    virtual size_t GetUniBuffObjOffset() const;
     virtual size_t GetSingleUniBuffObjSize() const { return 0; }
     virtual VkBuffer BaseObjUniBuffer() const { return nullptr; }
     virtual VkDeviceMemory BaseObjUniBufferMemory() const { return nullptr; }

@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "GBaseObject.h"
+#include "BaseTechnique.h"
+#include "TechniqueManager.h"
 
 uint CGBaseObject::s_TechId = UINT_MAX;
 
@@ -75,15 +77,11 @@ void* CGBaseObject::GetIndicesPtr()
     return &m_Indices[0];
 }
 
-void CGBaseObject::UpdateUniformBuffer(VkDeviceMemory dev_mem)
+void* CGBaseObject::GetUniBuffData()
 {
-    SObjUniBuffer ub = {};
-    ub.obj_world = m_WorldMtx;
-
-    void* data;
-    vkMapMemory(g_Engine->Device(), g_Engine->Renderer()->BaseObjUniBufferMemory(), 0, sizeof(ub), 0, &data);
-    memcpy(data, &ub, sizeof(ub));
-    vkUnmapMemory(g_Engine->Device(), g_Engine->Renderer()->BaseObjUniBufferMemory());
+    m_UniBuffData.obj_world = m_WorldMtx;
+    m_UniBuffData.tex_mul = m_TexMultiplier;
+    return &m_UniBuffData;
 }
 
 void CGBaseObject::InitVectors(const EBaseObjInitType& type)

@@ -76,20 +76,6 @@ void CGObjectControl::UnregisterObject(const uint& tech, IGObject* obj)
 
 void CGObjectControl::RecordCommandBuffer(VkCommandBuffer& cmd_buff)
 {
-    //////////////////////////////////////////////////////////////////////////
-    VkPhysicalDeviceProperties props;
-    vkGetPhysicalDeviceProperties(g_Engine->Renderer()->GetPhysicalDevice(), &props);
-
-
-    size_t minUboAlignment = props.limits.minUniformBufferOffsetAlignment;
-
-    uint32_t offsets2[2];
-    offsets2[0] = 0;
-    offsets2[1] = sizeof(SObjUniBuffer);
-    TestUpdateUniBuff(offsets2);
-    //////////////////////////////////////////////////////////////////////////
-
-
     auto tech_mgr = g_Engine->Renderer()->GetTechMgr();
     uint tech_count = m_TechToObjVec.size();
     for (uint i = 0; i < tech_count; i++)
@@ -97,10 +83,9 @@ void CGObjectControl::RecordCommandBuffer(VkCommandBuffer& cmd_buff)
         auto tech = tech_mgr->GetTechnique(i);
         vkCmdBindPipeline(cmd_buff, VK_PIPELINE_BIND_POINT_GRAPHICS, tech->GetPipeline());
 
-        int kaka = 0;
-        //#BUFFERS zrobic to jakos madrze kiedys, pogrupowac, ponadawac offsety, by nie leciec tu w drugiej petli tylko za jednym razem machanac wsio
-        for (auto obj : m_TechToObjVec[i])
+        for (uint j = 0; j < m_TechToObjVec[i].size(); j++)
         {
+            auto obj = m_TechToObjVec[i][j];
             if (!obj->VertexBuffer())
                 continue;
 
@@ -109,25 +94,19 @@ void CGObjectControl::RecordCommandBuffer(VkCommandBuffer& cmd_buff)
             VkDeviceSize offsets[] = { 0 };
             vkCmdBindVertexBuffers(cmd_buff, 0, 1, vertexBuffers, offsets);
 
-            
+            // Prepare uni buff offset
+            uint32_t uni_offset = tech->GetUniBuffObjOffset() * j;
 
-            if (kaka == 0)
-                offsets2[0] = 0;//(offsets2[0] + minUboAlignment - 1) & ~(minUboAlignment - 1);
-            else
-                offsets2[0] = (sizeof(SObjUniBuffer) + minUboAlignment - 1) & ~(minUboAlignment - 1);
-
-            kaka++;
-
-          //  VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment
+            // Record command
             if (obj->IndexBuffer())
             {
                 vkCmdBindIndexBuffer(cmd_buff, obj->IndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
-                vkCmdBindDescriptorSets(cmd_buff, VK_PIPELINE_BIND_POINT_GRAPHICS, tech->GetPipelineLayout(), 0, 1, &g_Engine->Renderer()->m_DescriptorSet, 1, offsets2);  //#UNI_BUFF
+                vkCmdBindDescriptorSets(cmd_buff, VK_PIPELINE_BIND_POINT_GRAPHICS, tech->GetPipelineLayout(), 0, 1, &g_Engine->Renderer()->m_DescriptorSet, 1, &uni_offset);  //#UNI_BUFF
                 vkCmdDrawIndexed(cmd_buff, static_cast<uint32_t>(obj->GetIndicesCount()), 1, 0, 0, 0);
             }
             else
             {
-                vkCmdBindDescriptorSets(cmd_buff, VK_PIPELINE_BIND_POINT_GRAPHICS, tech->GetPipelineLayout(), 0, 1, &g_Engine->Renderer()->m_DescriptorSet, 1, offsets2);  //#UNI_BUFF
+                vkCmdBindDescriptorSets(cmd_buff, VK_PIPELINE_BIND_POINT_GRAPHICS, tech->GetPipelineLayout(), 0, 1, &g_Engine->Renderer()->m_DescriptorSet, 1, &uni_offset);  //#UNI_BUFF
                 vkCmdDraw(cmd_buff, static_cast<uint32_t>(obj->GetVerticesCount()), 1, 0, 0);
             }
         }
@@ -136,44 +115,39 @@ void CGObjectControl::RecordCommandBuffer(VkCommandBuffer& cmd_buff)
 
 //#UNI_BUFF
 /*
-Ponizsza metode uzupelnic tym co jeszcze nizej, wyliczac vector offsetow od razu per technika i rejestracja obiektow, posprzatac wsio
+wyliczac vector offsetow od razu per technika i rejestracja obiektow, posprzatac wsio
 Good Luck
 */
 void CGObjectControl::UpdateUniBuffers()
 {
+    size_t minUboAlignment = g_Engine->Renderer()->MinUboAlignment();
 
-}
-
-void CGObjectControl::TestUpdateUniBuff(uint32_t offsets2[])
-{
-    size_t minUboAlignment = 
-
-    if (minUboAlignment > 0)
+    // Update Uni buffers
+    for (uint tech_id = 0; tech_id < m_TechToObjVec.size(); tech_id++)
     {
-        offsets2[0] = (offsets2[0] + minUboAlignment - 1) & ~(minUboAlignment - 1);
-        offsets2[1] = (offsets2[1] + minUboAlignment - 1) & ~(minUboAlignment - 1);
+        uint8_t* pData;
+        auto uni_buff_mem = g_Engine->Renderer()->GetTechMgr()->GetTechnique(tech_id)->BaseObjUniBufferMemory();
+        auto single_obj_size = g_Engine->Renderer()->GetTechMgr()->GetTechnique(tech_id)->GetSingleUniBuffObjSize();
+        vkMapMemory(g_Engine->Device(), uni_buff_mem, 0, single_obj_size * m_TechToObjVec[tech_id].size(), 0, (void **)&pData);
+        for (uint obj_id = 0; obj_id < m_TechToObjVec[tech_id].size(); obj_id++)
+        {
+            void* obj_data = m_TechToObjVec[tech_id][obj_id]->GetUniBuffData();
+            if (obj_data)
+            {
+                memcpy(pData, obj_data, single_obj_size);
+            }
+            else
+            {
+                LogD("Object with invalid UniBuff data. Tech:");
+                LogD(tech_id);
+                LogD(" Obj:");
+                LogD(obj_id);
+                LogD("\n");
+            }
+            pData += g_Engine->Renderer()->GetTechMgr()->GetTechnique(tech_id)->GetUniBuffObjOffset();
+        }
+        vkUnmapMemory(g_Engine->Device(), uni_buff_mem);
     }
-
-    // Update Uni buffer
-    //obj->UpdateUniformBuffer(g_Engine->Renderer()->BaseObjUniBufferMemory());
-
-    SObjUniBuffer ub = {};
-    ub.obj_world = m_TechToObjVec.front()[0]->WorldMtx();
-    ub.tex_mul = m_TechToObjVec.front()[0]->m_TexMultiplier;
-
-    SObjUniBuffer ub2 = {};
-    ub2.obj_world = m_TechToObjVec.front()[1]->WorldMtx();
-    ub2.tex_mul = m_TechToObjVec.front()[1]->m_TexMultiplier;
-
-    uint8_t *pData;
-    vkMapMemory(g_Engine->Device(), g_Engine->Renderer()->BaseObjUniBufferMemory(), 0, sizeof(SObjUniBuffer) * 2, 0, (void **)&pData);
-    memcpy(pData, &ub, sizeof(ub));
-    pData += (sizeof(SObjUniBuffer) + minUboAlignment - 1) & ~(minUboAlignment - 1);//sizeof(ub); //#UNI_BUFF
-    memcpy(pData, &ub2, sizeof(ub2));
-    vkUnmapMemory(g_Engine->Device(), g_Engine->Renderer()->BaseObjUniBufferMemory());
-    //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
 }
 
 void CGObjectControl::EnsureTechIdWillFit(const uint& tech_id)

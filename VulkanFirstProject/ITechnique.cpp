@@ -97,6 +97,12 @@ bool ITechnique::CreateGraphicsPipeline()
     return true;
 }
 
+size_t ITechnique::GetUniBuffObjOffset() const
+{
+    size_t minUboAlignment = g_Engine->Renderer()->MinUboAlignment();
+    return (GetSingleUniBuffObjSize() + minUboAlignment - 1) & ~(minUboAlignment - 1);
+}
+
 void ITechnique::GetInputAssemblyDesc(VkPipelineInputAssemblyStateCreateInfo& inputAssembly)
 {
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
