@@ -40,7 +40,7 @@ public:
 
     // Misc
     void PresentQueueWaitIdle();
-    void RecreateCommandBuffer(); //#CMD_BUFF w ogole potrzebne??
+    void RecreateCommandBuffer();
 
 protected:
     struct SwapChainSupportDetails
@@ -104,8 +104,6 @@ protected:
     bool CreateDescriptorPool();
     bool CreateDescriptorSet();
 
-
-
     //#IMAGES
     //////////////////////////////////////////////////////////////////////////
 
@@ -138,7 +136,6 @@ protected:
     void GenerateMipmaps(VkImage image, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
     //////////////////////////////////////////////////////////////////////////
 
-
     // #DEPTH
     //////////////////////////////////////////////////////////////////////////
     bool CreateDepthResources();
@@ -152,7 +149,6 @@ protected:
     VkDeviceMemory m_DepthImageMemory = nullptr;
     VkImageView m_DepthImageView = nullptr;
     //////////////////////////////////////////////////////////////////////////
-
 
     // Render
     bool SubmitDrawCommands(const uint32_t& imageIndex, VkSubmitInfo& submitInfo);
@@ -188,11 +184,12 @@ private:
     std::vector<VkImageView> m_SwapChainImageViewsVec;
     std::vector<VkFramebuffer> m_SwapChainFramebuffersVec;
 
-    //#UNI_BUFF
     public:
     // Uniform Buffers
     VkBuffer m_CamUniBuffer = nullptr;
     VkDeviceMemory m_CamUniBufferMemory = nullptr;
+
+    // Descriptor Set
     VkDescriptorSet m_DescriptorSet = nullptr;
     VkDescriptorPool m_DescriptorPool = nullptr;
     VkDescriptorSetLayout m_DescriptorSetLayout = nullptr;

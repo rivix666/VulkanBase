@@ -269,9 +269,9 @@ void CVulkanRenderer::PresentQueueWaitIdle()
     vkQueueWaitIdle(m_PresentQueue);
 }
 
-//#CMD_BUFF vkResetCommandBuffer.
 void CVulkanRenderer::RecreateCommandBuffer()
 {
+    // #CMD_BUFF In the future think about vkResetCommandBuffer() method
     vkFreeCommandBuffers(m_Device, m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
     CreateCommandBuffers();
 }

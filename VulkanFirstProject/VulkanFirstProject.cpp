@@ -39,6 +39,15 @@ bool InitEngine()
     return true;
 }
 
+void RegisterBaseObjects()
+{
+    REGISTER_OBJ(0, new CGBaseObject(EBaseObjInitType::PLANE));
+    REGISTER_OBJ(0, new CGBaseObject(EBaseObjInitType::BOX, glm::vec3(0.0f, 4.0f, 0.0f)));
+    REGISTER_OBJ(0, new CGBaseObject(EBaseObjInitType::BOX, glm::vec3(-4.0f, 4.0f, 0.0f)));
+    REGISTER_OBJ(0, new CGBaseObject(EBaseObjInitType::BOX, glm::vec3(4.0f, 4.0f, 0.0f)));
+    g_Engine->Renderer()->RecreateCommandBuffer();
+}
+
 // Shutdown
 //////////////////////////////////////////////////////////////////////////
 int Shutdown()
@@ -63,13 +72,7 @@ int _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, in
     if (!InitEngine())
         return Shutdown();
 
-    // #UNI_BUFF_DEBUG
-    // Create objects
-    REGISTER_OBJ(0, new CGBaseObject(EBaseObjInitType::PLANE));
-    REGISTER_OBJ(0, new CGBaseObject(EBaseObjInitType::BOX, glm::vec3(0.0f, 4.0f, 0.0f)));
-    REGISTER_OBJ(0, new CGBaseObject(EBaseObjInitType::BOX, glm::vec3(-4.0f, 4.0f, 0.0f)));
-    REGISTER_OBJ(0, new CGBaseObject(EBaseObjInitType::BOX, glm::vec3(4.0f, 4.0f, 0.0f)));
-    g_Engine->Renderer()->RecreateCommandBuffer(); //#CMD_BUFF czy trzeba to wolac co register_obj, moz ejakis update? a co w takim razie z particlami?
+    RegisterBaseObjects();
 
     while (!glfwWindowShouldClose(window))
     {
