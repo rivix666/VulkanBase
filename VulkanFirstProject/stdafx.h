@@ -43,7 +43,7 @@
 #define RENDER_HEIGHT WINDOW_HEIGHT
 
 // Renderer defines
-#define OBJ_PER_TECHNIQUE 5
+#define OBJ_PER_TECHNIQUE 8
 
 // Projection defines
 #define FOV 60.0f

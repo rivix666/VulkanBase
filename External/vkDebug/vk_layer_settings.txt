@@ -168,3 +168,7 @@ lunarg_api_dump.name_size = 32
 lunarg_api_dump.type_size = 0
 lunarg_api_dump.use_spaces = TRUE
 lunarg_api_dump.show_shader = FALSE
+
+# Set as enviroment variable if vulkan crashes on SteamOverlay
+# https://www.reddit.com/r/vulkan/comments/8ybq6f/need_some_help_debugging/
+DISABLE_VK_LAYER_VALVE_steam_overlay_1=1
